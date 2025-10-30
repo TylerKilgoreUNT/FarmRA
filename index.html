@@ -9,28 +9,32 @@
 </head>
 <body>
     <nav id="top-bar" class="top-bar" aria-label="Top navigation">
+        <div class="farmra-logo">
+            <img src="/assets/FarmRA.png" alt="Farm Ra Logo">
+        </div>
         <div class="top-bar-left">
             <h1>FarmRA</h1>
         </div>
         <div class="top-bar-right">
-            <button class="icon-btn" title="User Profile" data-action="profile">👤</button>
+            <button class="icon-btn" title="User Settings" data-action="settings"></button>
         </div>
-    </nav>
-    <nav id="left-narrow" class="sidebar left-narrow" aria-label="Primary navigation">
-        <button class="icon-btn" title="Map" data-action="map">🗺️</button>
-        <button class="icon-btn" title="Moisture" data-action="moisture">💧</button>
-        <button class="icon-btn" title="Temperature" data-action="temperature">🌡️</button>
     </nav>
 
     <nav id="left-panel" class="sidebar left-panel" aria-label="Secondary navigation">
         <div class="sidebar-header">
-            <h3>Controls</h3>
+            <h3>Sensor Nodes</h3>
         </div>
         <div class="sidebar-section">
-            <button class="side-btn" data-action="light">Lights</button>
-            <button class="side-btn" data-action="export">Export</button>
-            <button class="side-btn" data-action="settings">Settings</button>
+            <button class="side-btn" data-action="light">Node 1</button>
+            <button class="side-btn" data-action="export">Node 2</button>
+            <button class="side-btn" data-action="settings">Node 3</button>
         </div>
+    </nav>
+    <nav id="left-narrow" class="sidebar left-narrow" aria-label="Primary navigation">
+        <button class="icon-btn all" title="all" data-action="all"></button>
+        <button class="icon-btn light" title="Light" data-action="light"></button>
+        <button class="icon-btn moisture" title="Moisture" data-action="moisture"></button>
+        <button class="icon-btn temperature" title="Temperature" data-action="temperature"></button>
     </nav>
     <main>
         <div class="grafanaContainer">
