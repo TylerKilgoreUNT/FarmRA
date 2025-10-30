@@ -4,11 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <link rel="stylesheet" href="style/style.css">
     <title>FarmRA</title>
 </head>
 <body>
-    <nav id="sidebar">
-    </nav> 
+    <nav id="top-bar" class="top-bar" aria-label="Top navigation">
+        <div class="top-bar-left">
+            <h1>FarmRA</h1>
+        </div>
+        <div class="top-bar-right">
+            <button class="icon-btn" title="User Profile" data-action="profile">👤</button>
+        </div>
+    </nav>
+    <nav id="left-narrow" class="sidebar left-narrow" aria-label="Primary navigation">
+        <button class="icon-btn" title="Map" data-action="map">🗺️</button>
+        <button class="icon-btn" title="Moisture" data-action="moisture">💧</button>
+        <button class="icon-btn" title="Temperature" data-action="temperature">🌡️</button>
+    </nav>
+
+    <nav id="left-panel" class="sidebar left-panel" aria-label="Secondary navigation">
+        <div class="sidebar-header">
+            <h3>Controls</h3>
+        </div>
+        <div class="sidebar-section">
+            <button class="side-btn" data-action="light">Lights</button>
+            <button class="side-btn" data-action="export">Export</button>
+            <button class="side-btn" data-action="settings">Settings</button>
+        </div>
+    </nav>
     <main>
         <div class="grafanaContainer">
             <h2>Hello World</h2>
@@ -23,5 +46,7 @@
             <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi nulla nisi officia unde quis voluptate inventore maiores eveniet atque obcaecati, dolor iusto non sapiente facere illum error aut accusamus sed.</p>
         </div>
     </main>
+    <div id="overlay" class="overlay" hidden></div>
+    <script src="js/main.js" defer></script>
 </body>
 </html>
