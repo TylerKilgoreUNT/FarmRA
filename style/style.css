@@ -3,26 +3,33 @@
 	box-sizing: border-box;
 }
 :root{
-	--left-narrow-width: 72px; /* icon column */
+	--left-narrow-width: 86px; /* icon column */
 	--left-panel-width: 220px; /* secondary panel */
-	--sidebar-bg: #1f2937; /* dark slate */
-	--sidebar-fg: #f9fafb;
+	--top-bar-height: 64px; /* height of the top navigation */
+	--sidebar-wide-bg: #242424; /* dark slate */
+	--sidebar-narrow-bg: #2c2c2c; /* slightly lighter for narrow sidebar */
+	--sidebar-fg: #ffffff;
 	--accent: #10b981; /* green */
+	--main-bg: #323232;
+	--top-nav-bg: #111;
+	--side-btn-bg: #fff;
+
 }
 
 body{
 	margin:0;
 	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 	color: #111827;
-	background: #fff;
+	background: var(--main-bg);
 }
 
 /* Sidebar common (used for both left columns) */
 .sidebar{
 	position: fixed;
-	top: 0;
+	/* start below the top navigation so the top bar has visual priority */
+	top: var(--top-bar-height);
 	bottom: 0;
-	background: var(--sidebar-bg);
+	background: var(--sidebar-wide-bg);
 	color: var(--sidebar-fg);
 	box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
 	display: flex;
@@ -30,6 +37,40 @@ body{
 	gap: .5rem;
 	z-index: 1000;
 }
+
+/* Top navigation - prominent and sits above sidebars */
+.top-bar{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--top-bar-height);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 1.5rem;
+	background: var(--top-nav-bg); /* prominent light bar */
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(16,24,40,0.06);
+	border-bottom: 1px solid rgba(0,0,0,0.04);
+	z-index: 1200; /* above sidebars */
+}
+
+.top-bar .farmra-logo {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	border-radius: 8px;
+}
+
+.top-bar .farmra-logo img {
+	height: 45px;
+	border-radius: 8px;
+}
+
+.top-bar .top-bar-left h1{ margin: 0; font-size: 1.125rem; }
+
+.top-bar .top-bar-right{ display: flex; align-items: center; gap: .5rem; }
 
 .sidebar-header h3{
 	margin: 0 0 .5rem 0;
@@ -43,22 +84,23 @@ body{
 }
 
 .side-btn{
-	background: transparent;
-	color: var(--sidebar-fg);
-	border: 1px solid rgba(255,255,255,0.06);
+	background: var(--side-btn-bg);
+	color: #000;
 	padding: .5rem .75rem;
-	border-radius: 6px;
-	text-align: left;
+	border-radius: 16px;
+	text-align: center;
 	cursor: pointer;
+	height: 64px;
+	font-size: 20px;
+	font-weight: 600;
 }
-.side-btn:hover{ background: rgba(255,255,255,0.04); }
-.side-btn.active{ background: var(--accent); color: #052e19; border-color: transparent; }
 
 /* Icon button style for the narrow column */
 .icon-btn{
-	width: 48px;
-	height: 48px;
+	width: 64px;
+	height: 64px;
 	border-radius: 10px;
+	overflow: hidden; /* ensure the image is clipped by the button radius */
 	background: transparent;
 	color: var(--sidebar-fg);
 	border: none;
@@ -68,22 +110,49 @@ body{
 	cursor: pointer;
 	font-size: 20px;
 }
-.icon-btn:hover, .icon-btn.active{ background: rgba(255,255,255,0.05); }
+
+.icon-btn .all{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/FarmRA.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.light{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/LightDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.moisture{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/MoistureDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.temperature{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/TemperatureDark.png') no-repeat center center;
+	background-size: contain;
+}
 
 /* Layout for the two persistent left columns */
 .left-narrow{
 	width: var(--left-narrow-width);
-	left: 0;
+	left: calc(var(--left-panel-width));
 	padding: .75rem .5rem;
 	gap: .5rem;
+	background-color: var(--sidebar-narrow-bg);
 }
 
 .left-panel{
 	width: var(--left-panel-width);
-	left: calc(var(--left-narrow-width));
+	left: 0;
 	padding: 1rem;
 }
-
 
 /* Main content spacing */
 main{
@@ -91,6 +160,8 @@ main{
 	max-width: 1100px;
 	margin: 0 auto;
 	margin-left: calc(var(--left-narrow-width) + var(--left-panel-width) + 1rem);
+	/* push main content below the top navigation */
+	margin-top: calc(var(--top-bar-height) + 1rem);
 }
 
 .grafanaContainer{ background: #f8fafc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
@@ -98,7 +169,8 @@ main{
 /* Responsive: stack left columns on very small screens */
 @media (max-width: 700px){
 	.left-narrow{ display: none; }
-	.left-panel{ left: 0; width: 100%; position: fixed; z-index:1000; }
-	main{ margin-left: 0; margin-top: calc(var(--left-panel-width) * 0); padding-top: 5rem; }
+	.left-panel{ left: 0; width: 100%; position: fixed; z-index:1000; top: var(--top-bar-height); }
+	main{ margin-left: 0; margin-top: calc(var(--top-bar-height) + 1rem); padding-top: 0; }
 }
 
+/* Color Definitions
