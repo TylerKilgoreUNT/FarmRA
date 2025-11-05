@@ -9,7 +9,6 @@
 	--sidebar-wide-bg: #242424; /* dark slate */
 	--sidebar-narrow-bg: #2c2c2c; /* slightly lighter for narrow sidebar */
 	--sidebar-fg: #ffffff;
-	--accent: #10b981; /* green */
 	--main-bg: #323232;
 	--top-nav-bg: #111;
 	--side-btn-bg: #fff;
@@ -111,10 +110,10 @@ body{
 	font-size: 20px;
 }
 
-.icon-btn .all{
+.icon-btn.all{
 	width: 64px;
 	height: 64px;
-	background: url('/assets/FarmRA.png') no-repeat center center;
+	background: url('/assets/AllSelected.png') no-repeat center center;
 	background-size: contain;
 }
 
@@ -125,11 +124,23 @@ body{
 	background-size: contain;
 }
 
+.icon-btn.light:hover{
+	background: url('/assets/LightSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
 .icon-btn.moisture{
 	width: 64px;
 	height: 64px;
 	background: url('/assets/MoistureDark.png') no-repeat center center;
 	background-size: contain;
+}
+
+.icon-btn.moisture:hover{
+	background: url('/assets/MoistureSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
 }
 
 .icon-btn.temperature{
@@ -139,12 +150,38 @@ body{
 	background-size: contain;
 }
 
+.icon-btn.temperature:hover{
+	background: url('/assets/TemperatureSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
+/* Add map button style */
+.icon-btn.map{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/MapDark.png') no-repeat center center;
+	background-size: contain;
+	text-decoration: none;
+	display: inline-flex;
+}
+
+.icon-btn.map:hover{
+	background: url('/assets/MapSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
 /* Layout for the two persistent left columns */
 .left-narrow{
 	width: var(--left-narrow-width);
 	left: calc(var(--left-panel-width));
 	padding: .75rem .5rem;
 	gap: .5rem;
+	/* Add flex properties to push map to bottom */
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 	background-color: var(--sidebar-narrow-bg);
 }
 
@@ -164,7 +201,38 @@ main{
 	margin-top: calc(var(--top-bar-height) + 1rem);
 }
 
-.grafanaContainer{ background: #f8fafc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+.grafanaContainer{ background: #f8fafc; border-radius: 8px; }
+
+/* Flexbox layout for Grafana containers */
+.grafana-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grafanaContainer-full {
+  width: 100%;
+  height: 400px;
+  margin-bottom: 0;
+}
+
+.grafana-half-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.grafanaContainer-half {
+  flex: 1 1 0;
+  height: 400px;
+  margin-bottom: 0;
+}
+
+.grafanaContainer {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  /* Remove margin-bottom for flex layout */
+}
 
 /* Responsive: stack left columns on very small screens */
 @media (max-width: 700px){
