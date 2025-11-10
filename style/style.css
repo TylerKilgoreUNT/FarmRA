@@ -71,6 +71,66 @@ body{
 
 .top-bar .top-bar-right{ display: flex; align-items: center; gap: .5rem; }
 
+/* User menu styles */
+.user-menu {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 240px;
+    background: var(--sidebar-wide-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    color: var(--sidebar-fg);
+    overflow: hidden;
+    z-index: 1300;
+}
+
+.menu-header {
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-email {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.menu-items {
+    padding: 0.5rem 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.menu-divider {
+    margin: 0.5rem 0;
+    border: 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-danger:hover {
+    background: rgba(239,68,68,0.1) !important;
+}
+
 .sidebar-header h3{
 	margin: 0 0 .5rem 0;
 	font-size: 1.05rem;
@@ -233,6 +293,9 @@ main{
   border-radius: 8px;
   /* Remove margin-bottom for flex layout */
 }
+
+/* Map CSS */
+#map { height: 600px; }
 
 /* Responsive: stack left columns on very small screens */
 @media (max-width: 700px){
