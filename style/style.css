@@ -19,7 +19,12 @@ body{
 	margin:0;
 	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 	color: #111827;
-	background: var(--main-bg);
+	/* Use the login background across the site with a subtle overlay */
+	background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('/assets/LoginBackground.jpg');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-color: var(--main-bg);
 }
 
 /* Sidebar common (used for both left columns) */
@@ -173,8 +178,21 @@ body{
 .icon-btn.all{
 	width: 64px;
 	height: 64px;
-	background: url('/assets/AllSelected.png') no-repeat center center;
+	/* default (not selected) shows dark variant */
+	background: url('/assets/AllDark.png') no-repeat center center;
 	background-size: contain;
+}
+
+.icon-btn.all:hover{
+    background: url('/assets/AllSelected.png') no-repeat center center;
+    background-size: contain;
+    transition: background 0.3s ease;
+}
+
+/* Selected state for All */
+.icon-btn.all.active{
+    background: url('/assets/AllSelected.png') no-repeat center center;
+    background-size: contain;
 }
 
 .icon-btn.light{
@@ -190,6 +208,12 @@ body{
 	transition: background 0.3s ease; 
 }
 
+/* Selected state: show selected variant while active */
+.icon-btn.light.active{
+    background: url('/assets/LightSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
 .icon-btn.moisture{
 	width: 64px;
 	height: 64px;
@@ -203,6 +227,11 @@ body{
 	transition: background 0.3s ease; 
 }
 
+.icon-btn.moisture.active{
+    background: url('/assets/MoistureSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
 .icon-btn.temperature{
 	width: 64px;
 	height: 64px;
@@ -214,6 +243,11 @@ body{
 	background: url('/assets/TemperatureSelected.png') no-repeat center center;
 	background-size: contain;
 	transition: background 0.3s ease; 
+}
+
+.icon-btn.temperature.active{
+    background: url('/assets/TemperatureSelected.png') no-repeat center center;
+    background-size: contain;
 }
 
 /* Add map button style */
@@ -232,6 +266,11 @@ body{
 	transition: background 0.3s ease; 
 }
 
+.icon-btn.map.active{
+    background: url('/assets/MapSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
 /* Layout for the two persistent left columns */
 .left-narrow{
 	width: var(--left-narrow-width);
@@ -242,13 +281,28 @@ body{
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	background-color: var(--sidebar-narrow-bg);
+	background: linear-gradient(to bottom, #111111 0%, var(--sidebar-narrow-bg) 100%);
+}
+
+/* Make the top group of icons more separated vertically */
+.left-narrow > div:first-child{
+	display: flex;
+	flex-direction: column;
+	gap: 1rem; /* increased spacing */
+	align-items: center;
+}
+
+.left-narrow > div:last-child{
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .left-panel{
 	width: var(--left-panel-width);
 	left: 0;
 	padding: 1rem;
+	background: linear-gradient(to bottom, #111111 0%, var(--sidebar-wide-bg) 100%);
 }
 
 /* Main content spacing */
@@ -261,7 +315,7 @@ main{
 	margin-top: calc(var(--top-bar-height) + 1rem);
 }
 
-.grafanaContainer{ background: #f8fafc; border-radius: 8px; }
+.grafanaContainer{ background: transparent; padding: 0; border-radius: 8px; overflow: hidden; }
 
 /* Flexbox layout for Grafana containers */
 .grafana-flex {
@@ -288,11 +342,70 @@ main{
 }
 
 .grafanaContainer {
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: 8px;
-  /* Remove margin-bottom for flex layout */
+	background: transparent;
+	padding: 0;
+	border-radius: 8px;
+	overflow: hidden;
+	/* Remove margin-bottom for flex layout */
 }
+
+/* Make iframes fill the container and inherit rounded corners */
+.grafanaContainer iframe{
+	width: 100%;
+	height: 100%;
+	display: block;
+	border: 0;
+	border-radius: 8px;
+}
+
+/* -------- Login CSS -------- */
+.login{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	min-height:100vh;
+	padding: 2rem;
+	background-image: url('/assets/LoginBackground.jpg');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.login .wrapper{
+	width: 420px;
+	background: rgba(255,255,255,0.06);
+	padding: 28px 30px;
+	border-radius: 12px;
+	color: #fff;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.login h1{ text-align:center; margin:0 0 8px; font-size:28px; }
+
+.input-box{ margin:12px 0; }
+.input-box input{
+	width:100%;
+	padding:12px 14px;
+	border-radius:8px;
+	border:1px solid rgba(255,255,255,0.08);
+	background: rgba(255,255,255,0.02);
+	color: #fff;
+	font-size:15px;
+}
+.input-box input::placeholder{ color: rgba(255,255,255,0.6); }
+
+
+.remember-forgot{ display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+.remember-forgot a{ color: rgba(255,255,255,0.85); text-decoration:underline; }
+
+.btn-login{ width:100%; padding:10px 12px; border-radius:8px; background: #16a34a; color:#fff; border:0; font-weight:600; cursor:pointer; margin-top:8px }
+.btn-login:hover{ opacity:0.95; }
+
+.oauth-row{ display:flex; justify-content:center; margin:14px 0; }
+.oauth-btn{ display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:8px; text-decoration:none; color:#111; font-weight:600; gap:10px }
+.oauth-btn.google{ background: #fff; }
+.oauth-icon{ width:20px; height:20px; display:inline-block; }
+
 
 /* Map CSS */
 #map { height: 600px; }
