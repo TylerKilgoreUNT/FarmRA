@@ -6,8 +6,8 @@ def lambda_handler(event, context):
         host="ec2-54-163-26-24.compute-1.amazonaws.com",
         port="5432",
         dbname="developer",
-        user="developer",
-        password="password"
+        user="",
+        password=""
     )
     cursor = conn.cursor()
 
