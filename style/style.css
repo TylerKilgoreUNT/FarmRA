@@ -3,32 +3,137 @@
 	box-sizing: border-box;
 }
 :root{
-	--left-narrow-width: 72px; /* icon column */
+	--left-narrow-width: 86px; /* icon column */
 	--left-panel-width: 220px; /* secondary panel */
-	--sidebar-bg: #1f2937; /* dark slate */
-	--sidebar-fg: #f9fafb;
-	--accent: #10b981; /* green */
+	--top-bar-height: 64px; /* height of the top navigation */
+	--sidebar-wide-bg: #242424; /* dark slate */
+	--sidebar-narrow-bg: #2c2c2c; /* slightly lighter for narrow sidebar */
+	--sidebar-fg: #ffffff;
+	--main-bg: #323232;
+	--top-nav-bg: #111;
+	--side-btn-bg: #fff;
+
 }
 
 body{
 	margin:0;
 	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 	color: #111827;
-	background: #fff;
+	/* Use the login background across the site with a subtle overlay */
+	background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('/assets/LoginBackground.jpg');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-color: var(--main-bg);
 }
 
 /* Sidebar common (used for both left columns) */
 .sidebar{
 	position: fixed;
-	top: 0;
+	/* start below the top navigation so the top bar has visual priority */
+	top: var(--top-bar-height);
 	bottom: 0;
-	background: var(--sidebar-bg);
+	background: var(--sidebar-wide-bg);
 	color: var(--sidebar-fg);
 	box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
 	display: flex;
 	flex-direction: column;
 	gap: .5rem;
 	z-index: 1000;
+}
+
+/* Top navigation - prominent and sits above sidebars */
+.top-bar{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--top-bar-height);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 1.5rem;
+	background: var(--top-nav-bg); /* prominent light bar */
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(16,24,40,0.06);
+	border-bottom: 1px solid rgba(0,0,0,0.04);
+	z-index: 1200; /* above sidebars */
+}
+
+.top-bar .farmra-logo {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	border-radius: 8px;
+}
+
+.top-bar .farmra-logo img {
+	height: 45px;
+	border-radius: 8px;
+}
+
+.top-bar .top-bar-left h1{ margin: 0; font-size: 1.125rem; }
+
+.top-bar .top-bar-right{ display: flex; align-items: center; gap: .5rem; }
+
+/* User menu styles */
+.user-menu {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 240px;
+    background: var(--sidebar-wide-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    color: var(--sidebar-fg);
+    overflow: hidden;
+    z-index: 1300;
+}
+
+.menu-header {
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-email {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.menu-items {
+    padding: 0.5rem 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.menu-divider {
+    margin: 0.5rem 0;
+    border: 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-danger:hover {
+    background: rgba(239,68,68,0.1) !important;
 }
 
 .sidebar-header h3{
@@ -43,22 +148,23 @@ body{
 }
 
 .side-btn{
-	background: transparent;
-	color: var(--sidebar-fg);
-	border: 1px solid rgba(255,255,255,0.06);
+	background: var(--side-btn-bg);
+	color: #000;
 	padding: .5rem .75rem;
-	border-radius: 6px;
-	text-align: left;
+	border-radius: 16px;
+	text-align: center;
 	cursor: pointer;
+	height: 64px;
+	font-size: 20px;
+	font-weight: 600;
 }
-.side-btn:hover{ background: rgba(255,255,255,0.04); }
-.side-btn.active{ background: var(--accent); color: #052e19; border-color: transparent; }
 
 /* Icon button style for the narrow column */
 .icon-btn{
-	width: 48px;
-	height: 48px;
+	width: 64px;
+	height: 64px;
 	border-radius: 10px;
+	overflow: hidden; /* ensure the image is clipped by the button radius */
 	background: transparent;
 	color: var(--sidebar-fg);
 	border: none;
@@ -68,22 +174,136 @@ body{
 	cursor: pointer;
 	font-size: 20px;
 }
-.icon-btn:hover, .icon-btn.active{ background: rgba(255,255,255,0.05); }
+
+.icon-btn.all{
+	width: 64px;
+	height: 64px;
+	/* default (not selected) shows dark variant */
+	background: url('/assets/AllDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.all:hover{
+    background: url('/assets/AllSelected.png') no-repeat center center;
+    background-size: contain;
+    transition: background 0.3s ease;
+}
+
+/* Selected state for All */
+.icon-btn.all.active{
+    background: url('/assets/AllSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
+.icon-btn.light{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/LightDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.light:hover{
+	background: url('/assets/LightSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
+/* Selected state: show selected variant while active */
+.icon-btn.light.active{
+    background: url('/assets/LightSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
+.icon-btn.moisture{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/MoistureDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.moisture:hover{
+	background: url('/assets/MoistureSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
+.icon-btn.moisture.active{
+    background: url('/assets/MoistureSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
+.icon-btn.temperature{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/TemperatureDark.png') no-repeat center center;
+	background-size: contain;
+}
+
+.icon-btn.temperature:hover{
+	background: url('/assets/TemperatureSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
+.icon-btn.temperature.active{
+    background: url('/assets/TemperatureSelected.png') no-repeat center center;
+    background-size: contain;
+}
+
+/* Add map button style */
+.icon-btn.map{
+	width: 64px;
+	height: 64px;
+	background: url('/assets/MapDark.png') no-repeat center center;
+	background-size: contain;
+	text-decoration: none;
+	display: inline-flex;
+}
+
+.icon-btn.map:hover{
+	background: url('/assets/MapSelected.png') no-repeat center center;
+	background-size: contain;
+	transition: background 0.3s ease; 
+}
+
+.icon-btn.map.active{
+    background: url('/assets/MapSelected.png') no-repeat center center;
+    background-size: contain;
+}
 
 /* Layout for the two persistent left columns */
 .left-narrow{
 	width: var(--left-narrow-width);
-	left: 0;
+	left: calc(var(--left-panel-width));
 	padding: .75rem .5rem;
 	gap: .5rem;
+	/* Add flex properties to push map to bottom */
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	background: linear-gradient(to bottom, #111111 0%, var(--sidebar-narrow-bg) 100%);
+}
+
+/* Make the top group of icons more separated vertically */
+.left-narrow > div:first-child{
+	display: flex;
+	flex-direction: column;
+	gap: 1rem; /* increased spacing */
+	align-items: center;
+}
+
+.left-narrow > div:last-child{
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .left-panel{
 	width: var(--left-panel-width);
-	left: calc(var(--left-narrow-width));
+	left: 0;
 	padding: 1rem;
+	background: linear-gradient(to bottom, #111111 0%, var(--sidebar-wide-bg) 100%);
 }
-
 
 /* Main content spacing */
 main{
@@ -91,14 +311,110 @@ main{
 	max-width: 1100px;
 	margin: 0 auto;
 	margin-left: calc(var(--left-narrow-width) + var(--left-panel-width) + 1rem);
+	/* push main content below the top navigation */
+	margin-top: calc(var(--top-bar-height) + 1rem);
 }
 
-.grafanaContainer{ background: #f8fafc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+.grafanaContainer{ background: transparent; padding: 0; border-radius: 8px; overflow: hidden; }
+
+/* Flexbox layout for Grafana containers */
+.grafana-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grafanaContainer-full {
+  width: 100%;
+  height: 400px;
+  margin-bottom: 0;
+}
+
+.grafana-half-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.grafanaContainer-half {
+  flex: 1 1 0;
+  height: 400px;
+  margin-bottom: 0;
+}
+
+.grafanaContainer {
+	background: transparent;
+	padding: 0;
+	border-radius: 8px;
+	overflow: hidden;
+	/* Remove margin-bottom for flex layout */
+}
+
+/* Make iframes fill the container and inherit rounded corners */
+.grafanaContainer iframe{
+	width: 100%;
+	height: 100%;
+	display: block;
+	border: 0;
+	border-radius: 8px;
+}
+
+/* -------- Login CSS -------- */
+.login{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	min-height:100vh;
+	padding: 2rem;
+	background-image: url('/assets/LoginBackground.jpg');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.login .wrapper{
+	width: 420px;
+	background: rgba(255,255,255,0.06);
+	padding: 28px 30px;
+	border-radius: 12px;
+	color: #fff;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.login h1{ text-align:center; margin:0 0 8px; font-size:28px; }
+
+.input-box{ margin:12px 0; }
+.input-box input{
+	width:100%;
+	padding:12px 14px;
+	border-radius:8px;
+	border:1px solid rgba(255,255,255,0.08);
+	background: rgba(255,255,255,0.02);
+	color: #fff;
+	font-size:15px;
+}
+.input-box input::placeholder{ color: rgba(255,255,255,0.6); }
+
+
+.remember-forgot{ display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+.remember-forgot a{ color: rgba(255,255,255,0.85); text-decoration:underline; }
+
+.btn-login{ width:100%; padding:10px 12px; border-radius:8px; background: #16a34a; color:#fff; border:0; font-weight:600; cursor:pointer; margin-top:8px }
+.btn-login:hover{ opacity:0.95; }
+
+.oauth-row{ display:flex; justify-content:center; margin:14px 0; }
+.oauth-btn{ display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:8px; text-decoration:none; color:#111; font-weight:600; gap:10px }
+.oauth-btn.google{ background: #fff; }
+.oauth-icon{ width:20px; height:20px; display:inline-block; }
+
+
+/* Map CSS */
+#map { height: 600px; }
 
 /* Responsive: stack left columns on very small screens */
 @media (max-width: 700px){
 	.left-narrow{ display: none; }
-	.left-panel{ left: 0; width: 100%; position: fixed; z-index:1000; }
-	main{ margin-left: 0; margin-top: calc(var(--left-panel-width) * 0); padding-top: 5rem; }
+	.left-panel{ left: 0; width: 100%; position: fixed; z-index:1000; top: var(--top-bar-height); }
+	main{ margin-left: 0; margin-top: calc(var(--top-bar-height) + 1rem); padding-top: 0; }
 }
 
+/* Color Definitions

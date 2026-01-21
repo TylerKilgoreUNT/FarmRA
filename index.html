@@ -1,52 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico" />
-    <link rel="stylesheet" href="style/style.css">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="style/style.css" />
     <title>FarmRA</title>
-</head>
-<body>
+  </head>
+  <body>
     <nav id="top-bar" class="top-bar" aria-label="Top navigation">
-        <div class="top-bar-left">
-            <h1>FarmRA</h1>
+      <div class="farmra-logo">
+        <img src="/assets/FarmRA.png" alt="Farm Ra Logo" />
+      </div>
+      <div class="top-bar-left">
+        <h1>FarmRA</h1>
+      </div>
+      <div class="top-bar-right">
+        <div class="user-menu">
+          <button
+            class="icon-btn"
+            title="User Settings"
+            data-action="settings"
+            id="userMenuBtn"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+          <div class="dropdown-menu" id="userDropdown" hidden>
+            <div class="menu-header">
+              <span class="user-email">user@example.com</span>
+            </div>
+            <div class="menu-items">
+              <a href="#" class="menu-item">
+                <span>Account Info</span>
+              </a>
+              <hr class="menu-divider" />
+              <a href="login.html" class="menu-item text-danger">
+                <span>Log Out</span>
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="top-bar-right">
-            <button class="icon-btn" title="User Profile" data-action="profile">👤</button>
-        </div>
-    </nav>
-    <nav id="left-narrow" class="sidebar left-narrow" aria-label="Primary navigation">
-        <button class="icon-btn" title="Map" data-action="map">🗺️</button>
-        <button class="icon-btn" title="Moisture" data-action="moisture">💧</button>
-        <button class="icon-btn" title="Temperature" data-action="temperature">🌡️</button>
+      </div>
     </nav>
 
-    <nav id="left-panel" class="sidebar left-panel" aria-label="Secondary navigation">
-        <div class="sidebar-header">
-            <h3>Controls</h3>
-        </div>
-        <div class="sidebar-section">
-            <button class="side-btn" data-action="light">Lights</button>
-            <button class="side-btn" data-action="export">Export</button>
-            <button class="side-btn" data-action="settings">Settings</button>
-        </div>
+    <nav
+      id="left-panel"
+      class="sidebar left-panel"
+      aria-label="Secondary navigation"
+    >
+      <div class="sidebar-header">
+        <h3>Sensor Nodes</h3>
+      </div>
+      <div class="sidebar-section">
+        <button class="side-btn" data-action="light">Node 1</button>
+        <button class="side-btn" data-action="export">Node 2</button>
+        <button class="side-btn" data-action="settings">Node 3</button>
+      </div>
+    </nav>
+    <nav
+      id="left-narrow"
+      class="sidebar left-narrow"
+      aria-label="Primary navigation"
+    >
+      <div>
+        <button class="icon-btn all" title="all" data-action="all"></button>
+        <button
+          class="icon-btn light"
+          title="Light"
+          data-action="light"
+        ></button>
+        <button
+          class="icon-btn moisture"
+          title="Moisture"
+          data-action="moisture"
+        ></button>
+        <button
+          class="icon-btn temperature"
+          title="Temperature"
+          data-action="temperature"
+        ></button>
+      </div>
+      <div>
+        <a href="map.html" class="icon-btn map" title="Map"></a>
+      </div>
     </nav>
     <main>
-        <div class="grafanaContainer">
-            <h2>Hello World</h2>
-            <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quo, laborum exercitationem. Obcaecati repudiandae quas quasi doloremque at mollitia architecto dolor quos velit exercitationem molestias quae magnam quibusdam, similique voluptatem sapiente temporibus nulla laborum repellendus dicta. Quaerat qui vero autem perspiciatis nam harum ex dolore iusto, impedit consequuntur blanditiis magnam cumque dolores asperiores eligendi explicabo tempora placeat necessitatibus accusamus quia cum totam. Libero, assumenda nihil? Hic molestiae earum cumque laborum quaerat perspiciatis culpa autem dolore iste distinctio, eum omnis dignissimos accusantium id quibusdam eligendi, accusamus error quod obcaecati animi numquam nostrum amet? Impedit reprehenderit totam enim eum rerum animi, asperiores pariatur.</p>
+      <div class="grafana-flex">
+        <div class="grafanaContainer grafanaContainer-full">
+          <iframe
+            src="http://ec2-100-48-175-105.compute-1.amazonaws.com:3000/d-solo/adrltsq/12-22-2025-node-1?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true"
+            width="100%"
+            height="400px"
+            title="Grafana Panel 1"
+          ></iframe>
         </div>
-        <div class="grafanaContainer">
-            <h2>Example Heading</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Et ducimus porro beatae exercitationem quaerat voluptates illo quo? Sed voluptatem, alias distinctio in mollitia quasi quaerat at dolore temporibus sunt consequuntur.</p>
+        <div class="grafana-half-row">
+          <div class="grafanaContainer grafanaContainer-half">
+            <iframe
+              src="http://ec2-100-48-175-105.compute-1.amazonaws.com:3000/d-solo/ad2q5hg/12-22-2025-node-2?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true"
+              width="100%"
+              height="400px"
+              title="Grafana Panel 2"
+            ></iframe>
+          </div>
+          <div class="grafanaContainer grafanaContainer-half">
+            <iframe
+              src="http://ec2-100-48-175-105.compute-1.amazonaws.com:3000/d-solo/adjmqsp/12-22-2025-node-3?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true"
+              width="100%"
+              height="400px"
+              title="Grafana Panel 3"
+            ></iframe>
+          </div>
         </div>
-        <div class="grafanaContainer">
-            <h2>Lorem Ipsum</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi nulla nisi officia unde quis voluptate inventore maiores eveniet atque obcaecati, dolor iusto non sapiente facere illum error aut accusamus sed.</p>
-        </div>
+      </div>
     </main>
     <div id="overlay" class="overlay" hidden></div>
     <script src="js/main.js" defer></script>
-</body>
+  </body>
 </html>
