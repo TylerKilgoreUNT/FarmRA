@@ -53,6 +53,33 @@
                 maxZoom: 19,
                 attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
             }).addTo(map);
+            
+            // Define custom marker icons (larger size)
+            var blueIcon = L.icon({
+                iconUrl: '/assets/markerBlue.png',
+                iconSize: [72, 96],
+                iconAnchor: [36, 96],
+                popupAnchor: [0, -96]
+            });
+            
+            var greenIcon = L.icon({
+                iconUrl: '/assets/markerGreen.png',
+                iconSize: [72, 96],
+                iconAnchor: [36, 96],
+                popupAnchor: [0, -96]
+            });
+            
+            var redIcon = L.icon({
+                iconUrl: '/assets/markerRed.png',
+                iconSize: [72, 96],
+                iconAnchor: [36, 96],
+                popupAnchor: [0, -96]
+            });
+            
+            // Add markers with custom icons
+            L.marker([33.254, -97.152], {icon: blueIcon}).addTo(map).bindPopup('<b>Node 1</b><br>Sensor Node 1');
+            L.marker([33.255, -97.153], {icon: greenIcon}).addTo(map).bindPopup('<b>Node 2</b><br>Sensor Node 2');
+            L.marker([33.253, -97.151], {icon: redIcon}).addTo(map).bindPopup('<b>Node 3</b><br>Sensor Node 3');
          </script>
     </main>
     <div id="overlay" class="overlay" hidden></div>
