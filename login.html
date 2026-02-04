@@ -13,31 +13,39 @@
 <body>
     <!-- Login -->
     <section class="login">
-        <div class="wrapper">
-            <form action="#">
-                <h1>Login</h1>
-                <div class="input-box">
-                    <input type="text" placeholder="Username" required>
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="input-box">
-                    <input type="password" placeholder="Password" required>
-                    <i class="fas fa-lock"></i>
-                </div>
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="/assets/favicon.ico" alt="FarmRA Logo" class="large-logo">
+                <h2>Welcome to FarmRA</h2>
+            </div>
+            <div class="login-form-container">
+                <div class="wrapper">
+                    <form action="#">
+                        <h1>Login</h1>
+                        <div class="input-box">
+                            <input type="text" placeholder="Username" required>
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="input-box">
+                            <input type="password" placeholder="Password" required>
+                            <i class="fas fa-lock"></i>
+                        </div>
 
-                <div class="remember-forgot">
-                    <label><input type="checkbox"> Remember Me</label>
-                    <a href="#"> Forgot password?</a>
-                </div>
+                        <div class="remember-forgot">
+                            <label><input type="checkbox"> Remember Me</label>
+                            <a href="#"> Forgot password?</a>
+                        </div>
 
-                <button type="submit" class="btn-login">Login</button>
-                <div class="oauth-row">
-                    <a href="/auth/google" class="oauth-btn google">
-                        <img src="/assets/googleOAuth2.png" alt="Google sign in" class="oauth-icon">
-                        <span>Sign in with Google</span>
-                    </a>
+                        <button type="submit" class="btn-login">Login</button>
+                        <div class="oauth-row">
+                            <a href="/auth/google" class="oauth-btn google">
+                                <img src="/assets/googleOAuth2.png" alt="Google sign in" class="oauth-icon">
+                                <span>Sign in with Google</span>
+                            </a>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
 
     </section>
