@@ -29,10 +29,10 @@ CREATE TABLE nodes
 CREATE TABLE measurements
 (
     m_time TIMESTAMPTZ NOT NULL,
-    n_id_fk INTEGER,
-    m_temperature DOUBLE PRECISION,
-    m_moisture DOUBLE PRECISION,
-    m_light DOUBLE PRECISION,
+    n_id_fk INTEGER NOT NULL,
+    m_temperature DOUBLE PRECISION NOT NULL,
+    m_moisture DOUBLE PRECISION NOT NULL,
+    m_light DOUBLE PRECISION NOT NULL,
     
     CONSTRAINT measurements_fk FOREIGN KEY(n_id_fk) 
                     REFERENCES nodes(n_id)
