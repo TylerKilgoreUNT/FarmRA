@@ -148,15 +148,32 @@ body{
 }
 
 .side-btn{
-	background: var(--side-btn-bg);
-	color: #000;
-	padding: .5rem .75rem;
-	border-radius: 16px;
+	background: rgba(255,255,255,0.08);
+	color: #fff;
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
 	text-align: center;
 	cursor: pointer;
-	height: 64px;
-	font-size: 20px;
-	font-weight: 600;
+	height: auto;
+	font-size: 14px;
+	font-weight: 500;
+	border: 1px solid rgba(255,255,255,0.1);
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.side-btn:hover{
+	background: rgba(255,255,255,0.12);
+	border-color: rgba(255,255,255,0.2);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.side-btn:active{
+	background: rgba(255,255,255,0.15);
+	transform: translateY(0);
 }
 
 /* Icon button style for the narrow column */
@@ -371,8 +388,44 @@ main{
 	background-repeat: no-repeat;
 }
 
+.login-container{
+	display: flex;
+	width: 100%;
+	max-width: 1000px;
+	gap: 4rem;
+	align-items: center;
+}
+
+.login-logo{
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+}
+
+.login-logo .large-logo{
+	width: 200px;
+	height: 200px;
+	border-radius: 12px;
+	margin-bottom: 2rem;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.login-logo h2{
+	font-size: 48px;
+	margin: 0;
+	font-weight: 700;
+	text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.login-form-container{
+	flex: 1;
+}
+
 .login .wrapper{
-	width: 420px;
+	width: 100%;
 	background: rgba(255,255,255,0.06);
 	padding: 28px 30px;
 	border-radius: 12px;
@@ -408,13 +461,65 @@ main{
 
 
 /* Map CSS */
-#map { height: 600px; }
+#map { 
+	height: 600px; 
+	border-radius: 12px; 
+	overflow: hidden; 
+	box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
 
+/* Ensure Leaflet container respects rounded corners and clipping */
+.leaflet-container{
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+/* Fix marker image aspect ratio so custom PNG pins aren't squeezed */
+.leaflet-marker-icon{
+	display: block;
+	object-fit: contain !important;
+	width: auto !important;
+	height: auto !important;
+	max-width: none !important;
+	max-height: none !important;
+}
+
+.leaflet-marker-icon[src*="markerBlue.png"],
+.leaflet-marker-icon[src*="markerGreen.png"],
+.leaflet-marker-icon[src*="markerRed.png"]{
+	width: 72px !important;
+	height: 96px !important;
+}
 /* Responsive: stack left columns on very small screens */
+@media (max-width: 900px){
+	.login-container{
+		flex-direction: column;
+		gap: 2rem;
+	}
+	
+	.login-logo .large-logo{
+		width: 150px;
+		height: 150px;
+	}
+	
+	.login-logo h2{
+		font-size: 36px;
+	}
+}
+
 @media (max-width: 700px){
 	.left-narrow{ display: none; }
 	.left-panel{ left: 0; width: 100%; position: fixed; z-index:1000; top: var(--top-bar-height); }
 	main{ margin-left: 0; margin-top: calc(var(--top-bar-height) + 1rem); padding-top: 0; }
+	
+	.login-logo .large-logo{
+		width: 120px;
+		height: 120px;
+	}
+	
+	.login-logo h2{
+		font-size: 28px;
+	}
 }
 
 /* Color Definitions
