@@ -143,6 +143,36 @@ body .login {
   min-height: 100svh;
 }
 
+body .login-container {
+  flex-direction: column;
+  gap: clamp(1.5rem, 5vw, 2rem);
+  max-width: 100%;
+}
+
+body .login-logo {
+  width: 100%;
+}
+
+body .login-logo .large-logo {
+  width: clamp(180px, 45vw, 240px);
+  height: clamp(180px, 45vw, 240px);
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+}
+
+body .login-logo h2 {
+  font-size: clamp(2rem, 8vw, 3rem);
+  margin-bottom: clamp(0.25rem, 1vw, 0.5rem);
+}
+
+body .login-logo .welcome-text {
+  font-size: clamp(0.9rem, 3vw, 1.125rem);
+  padding: 0 1rem;
+}
+
+body .login-form-container {
+  width: 100%;
+}
+
 body .login .wrapper {
   width: min(100%, 520px);
   margin-inline: auto;
@@ -245,6 +275,26 @@ body .login h1 {
   body #map {
     height: clamp(420px, 65vh, 760px);
   }
+  
+  /* Login horizontal layout for tablets and up */
+  body .login-container {
+    flex-direction: row;
+    gap: clamp(2rem, 4vw, 3rem);
+    max-width: 900px;
+  }
+  
+  body .login-logo .large-logo {
+    width: clamp(220px, 26vw, 280px);
+    height: clamp(220px, 26vw, 280px);
+  }
+  
+  body .login-logo h2 {
+    font-size: clamp(2.25rem, 4vw, 2.75rem);
+  }
+  
+  body .login-logo .welcome-text {
+    font-size: clamp(1rem, 1.8vw, 1.125rem);
+  }
 }
 
 /* Desktop scaling */
@@ -257,6 +307,25 @@ body .login h1 {
   .grafanaContainer-full,
   .grafanaContainer-half {
     height: clamp(320px, 32vw, 420px);
+  }
+  
+  /* Login enhanced for desktop */
+  body .login-container {
+    gap: clamp(3rem, 5vw, 4rem);
+    max-width: 1000px;
+  }
+  
+  body .login-logo .large-logo {
+    width: 320px;
+    height: 320px;
+  }
+  
+  body .login-logo h2 {
+    font-size: 3rem;
+  }
+  
+  body .login-logo .welcome-text {
+    font-size: 1.125rem;
   }
 }
 
