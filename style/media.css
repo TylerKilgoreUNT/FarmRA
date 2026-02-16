@@ -1,0 +1,644 @@
+/* Mobile-first responsive layer for FarmRA (320px to 1200px+) */
+
+html:root {
+  --left-panel-width: clamp(170px, 34vw, 220px);
+  --left-narrow-width: clamp(68px, 18vw, 86px);
+  --top-bar-height: clamp(56px, 10vw, 64px);
+  --mobile-dock-height: clamp(72px, 16vw, 96px);
+  --content-gap: clamp(0.75rem, 2.5vw, 1.25rem);
+  --panel-radius: clamp(10px, 2vw, 14px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html body {
+  min-width: 320px;
+  font-size: clamp(14px, 1.8vw, 16px);
+  padding-top: var(--top-bar-height);
+}
+
+body .top-bar {
+  height: var(--top-bar-height);
+  padding: 0 clamp(0.75rem, 3vw, 1.5rem);
+}
+
+body .top-bar .farmra-logo img {
+  height: clamp(34px, 8vw, 45px);
+}
+
+body .top-bar .top-bar-left h1 {
+  font-size: clamp(1rem, 3.8vw, 1.125rem);
+}
+
+.dropdown-menu {
+  min-width: min(85vw, 260px);
+}
+
+/* Mobile baseline: stack side navigation and content */
+body .sidebar {
+  position: static;
+  top: auto;
+  bottom: auto;
+  width: 100%;
+  z-index: auto;
+}
+
+body .sidebar.left-panel,
+body .sidebar.left-narrow {
+  left: auto;
+  margin: 0 var(--content-gap);
+  border-radius: var(--panel-radius);
+}
+
+.left-panel {
+  order: 1;
+  width: auto;
+  padding: clamp(0.75rem, 2.8vw, 1rem);
+}
+
+.left-narrow {
+  order: 2;
+  width: auto;
+  padding: clamp(0.5rem, 2.2vw, 0.75rem);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.left-narrow > div:first-child {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.35rem, 1.6vw, 0.75rem);
+  align-items: center;
+}
+
+.left-narrow > div:last-child {
+  justify-content: center;
+}
+
+.icon-btn,
+.icon-btn.all,
+.icon-btn.light,
+.icon-btn.moisture,
+.icon-btn.temperature,
+.icon-btn.map {
+  width: clamp(48px, 12vw, 64px);
+  height: clamp(48px, 12vw, 64px);
+}
+
+.sidebar-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.5rem, 1.8vw, 0.75rem);
+}
+
+body .sidebar .side-btn {
+  width: 100%;
+  min-height: clamp(40px, 8.5vw, 48px);
+  padding: clamp(0.55rem, 2vw, 0.75rem) clamp(0.75rem, 2.6vw, 1rem);
+}
+
+body main {
+  width: min(100%, 1200px);
+  margin: clamp(0.35rem, 1.2vw, 0.6rem) auto 0;
+  padding: clamp(0.75rem, 3vw, 1.25rem);
+  margin-left: 0;
+}
+
+body .grafana-flex {
+  display: grid;
+  gap: var(--content-gap);
+}
+
+.grafana-half-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--content-gap);
+}
+
+.grafanaContainer-full,
+.grafanaContainer-half {
+  height: clamp(240px, 48vw, 400px);
+}
+
+body #map {
+  height: clamp(300px, 62vh, 650px);
+}
+
+.leaflet-marker-icon[src*="markerBlue.png"],
+.leaflet-marker-icon[src*="markerGreen.png"],
+.leaflet-marker-icon[src*="markerRed.png"] {
+  width: clamp(42px, 9vw, 72px) !important;
+  height: clamp(56px, 12vw, 96px) !important;
+}
+
+/* Login mobile baseline */
+body .login {
+  padding: clamp(1rem, 4vw, 2rem);
+  min-height: 100svh;
+}
+
+body .login .wrapper {
+  width: min(100%, 520px);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 1.75rem);
+}
+
+body .login h1 {
+  font-size: clamp(1.4rem, 6vw, 1.8rem);
+}
+
+.remember-forgot {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Small devices and larger phones */
+@media (min-width: 576px) {
+  .sidebar-section {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body .sidebar.left-panel,
+  body .sidebar.left-narrow {
+    margin-inline: clamp(0.75rem, 2.5vw, 1.25rem);
+  }
+
+  .grafanaContainer-full,
+  .grafanaContainer-half {
+    height: clamp(280px, 42vw, 420px);
+  }
+}
+
+/* Tablet and small laptop */
+@media (min-width: 768px) {
+  :root {
+    --left-panel-width: clamp(185px, 24vw, 210px);
+    --left-narrow-width: clamp(70px, 10vw, 82px);
+  }
+
+  body .sidebar {
+    position: fixed;
+    top: var(--top-bar-height);
+    bottom: 0;
+    width: auto;
+    z-index: 1000;
+  }
+
+  body .sidebar.left-panel,
+  body .sidebar.left-narrow {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  body .sidebar.left-panel {
+    left: var(--left-narrow-width) !important;
+    right: auto;
+    z-index: 1000;
+    width: var(--left-panel-width);
+    padding: clamp(0.85rem, 2vw, 1rem);
+  }
+
+  body .sidebar.left-narrow {
+    left: 0 !important;
+    right: auto;
+    z-index: 1001;
+    width: var(--left-narrow-width);
+    padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(0.35rem, 1.2vw, 0.5rem);
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .left-narrow > div:first-child {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 1.6vw, 1rem);
+  }
+
+  .left-narrow > div:last-child {
+    width: 100%;
+  }
+
+  .sidebar-section {
+    grid-template-columns: 1fr;
+  }
+
+  body main {
+    margin-left: calc(var(--left-panel-width) + var(--left-narrow-width));
+    width: calc(100% - (var(--left-panel-width) + var(--left-narrow-width)));
+    max-width: none;
+    margin-top: clamp(0.5rem, 1.2vw, 0.9rem);
+    padding: clamp(1rem, 2.2vw, 1.5rem);
+  }
+
+  .grafana-half-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body #map {
+    height: clamp(420px, 65vh, 760px);
+  }
+}
+
+/* Desktop scaling */
+@media (min-width: 1024px) {
+  :root {
+    --left-panel-width: clamp(200px, 20vw, 220px);
+    --left-narrow-width: clamp(78px, 7vw, 86px);
+  }
+
+  .grafanaContainer-full,
+  .grafanaContainer-half {
+    height: clamp(320px, 32vw, 420px);
+  }
+}
+
+/* Wider screens up to and beyond target range */
+@media (min-width: 1200px) {
+  body main {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* Vertical monitors (portrait desktop displays) */
+@media (orientation: portrait) and (min-width: 768px) and (min-height: 1000px) {
+  body {
+    background: none;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-image: url('/assets/LoginBackground.jpg');
+    background-repeat: no-repeat;
+    background-size: auto 130%;
+    background-position: center center;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45));
+    pointer-events: none;
+  }
+
+  :root {
+    --left-panel-width: clamp(180px, 18vw, 220px);
+    --left-narrow-width: clamp(68px, 7vw, 86px);
+  }
+
+  body .top-bar {
+    padding-inline: clamp(0.85rem, 1.5vw, 1.5rem);
+  }
+
+  .left-panel {
+    padding: clamp(0.75rem, 1.2vw, 1rem);
+  }
+
+  .left-narrow {
+    padding: clamp(0.55rem, 0.9vw, 0.8rem) clamp(0.3rem, 0.6vw, 0.5rem);
+  }
+
+  .icon-btn,
+  .icon-btn.all,
+  .icon-btn.light,
+  .icon-btn.moisture,
+  .icon-btn.temperature,
+  .icon-btn.map {
+    width: clamp(56px, 5.2vw, 64px);
+    height: clamp(56px, 5.2vw, 64px);
+  }
+
+  body main {
+    margin-top: clamp(0.45rem, 0.8vw, 0.75rem);
+    width: calc(100% - (var(--left-panel-width) + var(--left-narrow-width)));
+    max-width: none;
+    padding: clamp(0.85rem, 1.6vw, 1.25rem);
+  }
+
+  body .grafana-flex,
+  body #map {
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .grafanaContainer-full,
+  .grafanaContainer-half {
+    height: clamp(300px, 26vh, 420px);
+  }
+
+  body #map {
+    height: clamp(520px, 72vh, 980px);
+  }
+}
+
+/* Portrait phones: keep metrics as a fixed bottom dock */
+@media (orientation: portrait) and (max-width: 767px) {
+  body {
+    padding-bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
+
+  body .sidebar.left-panel {
+    position: relative;
+    z-index: 1100;
+    width: min(calc(100% - 1rem), 560px);
+    margin-inline: auto !important;
+    left: 0;
+    right: 0;
+  }
+
+  body .left-panel .sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  body .left-panel .sidebar-section .side-btn {
+    display: none;
+    border-radius: 0;
+    justify-content: space-between;
+    padding-inline: 0.9rem;
+  }
+
+  body .left-panel .sidebar-section .side-btn.active {
+    display: flex;
+    border-radius: 10px;
+  }
+
+  body .left-panel .sidebar-section.open .side-btn {
+    display: flex;
+  }
+
+  body .left-panel .sidebar-section.open .side-btn + .side-btn {
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  body .left-panel .sidebar-section.open .side-btn.active {
+    border-radius: 10px 10px 0 0;
+  }
+
+  body .left-panel .sidebar-section .side-btn.active::after {
+    content: '▾';
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-left: 0.5rem;
+  }
+
+  body .left-panel .sidebar-section.open .side-btn.active::after {
+    content: '▴';
+  }
+
+  body .sidebar.left-narrow {
+    position: fixed;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0;
+    top: auto;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0 !important;
+    border-radius: 0;
+    z-index: 1150;
+    padding: 0.5rem clamp(0.5rem, 2.5vw, 1rem) calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    min-height: var(--mobile-dock-height);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+    column-gap: clamp(0.2rem, 1.2vw, 0.6rem);
+  }
+
+  body .left-narrow > div:first-child {
+    display: contents;
+  }
+
+  body .left-narrow > div:last-child {
+    display: contents;
+  }
+
+  body .left-narrow .icon-btn {
+    margin: 0 auto;
+  }
+
+  body main {
+    padding-bottom: calc(var(--mobile-dock-height) + 0.5rem);
+  }
+}
+
+/* Horizontal phones and small tablets */
+@media (orientation: landscape) and (max-width: 900px) {
+  body .left-panel {
+    padding: 0.75rem;
+  }
+
+  .sidebar-section {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body .left-narrow {
+    padding: 0.5rem;
+  }
+
+  body .left-narrow > div:first-child {
+    gap: 0.5rem;
+  }
+
+  .grafanaContainer-full,
+  .grafanaContainer-half {
+    height: clamp(220px, 42vh, 320px);
+  }
+
+  body #map {
+    height: clamp(260px, 58vh, 500px);
+  }
+}
+
+/* Global modern UI/UX polish */
+:root {
+  --font-sans: "Segoe UI Variable", "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --surface-soft: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --border-soft: rgba(255, 255, 255, 0.14);
+  --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  background-attachment: fixed;
+}
+
+.top-bar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.top-bar .farmra-logo img {
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.top-bar .top-bar-left h1 {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.left-panel,
+.left-narrow {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-header h3 {
+  font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+  font-weight: 640;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.7rem;
+}
+
+.side-btn {
+  min-height: 44px;
+  font-size: clamp(0.84rem, 1.2vw, 0.94rem);
+  font-weight: 620;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.side-btn.active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.14) 100%);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.icon-btn {
+  border-radius: 12px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+}
+
+.menu-item,
+.side-btn,
+.icon-btn,
+.btn-login,
+.oauth-btn {
+  outline: none;
+}
+
+.menu-item:focus-visible,
+.side-btn:focus-visible,
+.icon-btn:focus-visible,
+.btn-login:focus-visible,
+.oauth-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.92), 0 0 0 4px rgba(99, 102, 241, 0.68);
+}
+
+main {
+  max-width: none;
+}
+
+main .grafana-flex,
+main > #map {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.grafana-flex {
+  gap: clamp(0.75rem, 1.6vw, 1.2rem);
+}
+
+.grafanaContainer {
+  background: var(--surface-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+}
+
+.grafanaContainer iframe {
+  border-radius: 12px;
+}
+
+#map {
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.login {
+  align-items: center;
+}
+
+.login .wrapper {
+  max-width: 520px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.login h1 {
+  font-size: clamp(1.5rem, 3vw, 1.95rem);
+  font-weight: 680;
+  margin-bottom: 0.9rem;
+}
+
+.input-box input {
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+}
+
+.btn-login,
+.oauth-btn {
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+.btn-login {
+  background: linear-gradient(180deg, #1fb75a 0%, #149245 100%);
+}
+
+.oauth-btn.google {
+  border: 1px solid rgba(17, 24, 39, 0.12);
+}
+
+@media (min-width: 1400px) {
+  main {
+    max-width: none;
+  }
+
+  main .grafana-flex,
+  main > #map {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
