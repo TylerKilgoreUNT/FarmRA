@@ -48,14 +48,57 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
 	// Active state for secondary panel buttons
-	document.querySelectorAll('.side-btn').forEach(btn => {
-		btn.addEventListener('click', function(){
-			document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
-			btn.classList.add('active');
-			const action = btn.dataset.action;
-			console.log('left-panel action:', action);
+	const sideButtons = Array.from(document.querySelectorAll('.side-btn'));
+	const sidebarSection = document.querySelector('#left-panel .sidebar-section');
+	const isPortraitMobile = () => globalThis.matchMedia('(orientation: portrait) and (max-width: 767px)').matches;
+
+	const setActiveSideButton = (btn) => {
+		sideButtons.forEach(b => b.classList.remove('active'));
+		btn.classList.add('active');
+		const action = btn.dataset.action;
+		console.log('left-panel action:', action);
+	};
+
+	if(sideButtons.length > 0){
+		if(!sideButtons.some(b => b.classList.contains('active'))){
+			setActiveSideButton(sideButtons[0]);
+		}
+
+		sideButtons.forEach(btn => {
+			btn.addEventListener('click', function(){
+				if(isPortraitMobile() && sidebarSection){
+					const isActive = btn.classList.contains('active');
+					const isOpen = sidebarSection.classList.contains('open');
+
+					if(isActive && !isOpen){
+						sidebarSection.classList.add('open');
+						return;
+					}
+
+					if(isActive && isOpen){
+						sidebarSection.classList.remove('open');
+						return;
+					}
+				}
+
+				setActiveSideButton(btn);
+				if(sidebarSection) sidebarSection.classList.remove('open');
+			});
 		});
-	});
+
+		document.addEventListener('click', (e) => {
+			if(!isPortraitMobile() || !sidebarSection) return;
+			if(sidebarSection.classList.contains('open') && !sidebarSection.contains(e.target)){
+				sidebarSection.classList.remove('open');
+			}
+		});
+
+		globalThis.addEventListener('resize', () => {
+			if(!isPortraitMobile() && sidebarSection){
+				sidebarSection.classList.remove('open');
+			}
+		});
+	}
 
 	// Active state for icon column buttons (toggle highlight)
 	// Bind only to the left-narrow buttons (buttons are used for sensor toggles)
@@ -72,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 	// Determine which icon should be active on load based on the current page
 	let desiredAction = 'all';
-	const path = window.location.pathname || '';
+	const path = globalThis.location.pathname || '';
 	if(path.endsWith('/map.html') || path.endsWith('map.html')){
 		desiredAction = 'map';
 	}

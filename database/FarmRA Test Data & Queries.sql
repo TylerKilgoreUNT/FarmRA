@@ -156,3 +156,14 @@ INSERT INTO measurements (m_time, m_temperature, n_id_fk) VALUES
   ('2025-11-05 22:30:00+00', 53.7, 1003),
   ('2025-11-05 23:00:00+00', 53.6, 1003),
   ('2025-11-05 23:30:00+00', 53.5, 1003);
+
+
+-----------------------------------------------------------------------
+
+INSERT INTO sensor_test_data (id, reading_time, temperature, node_id, moisture, light, test_message) 
+VALUES (1001, NOW(), 24.2, 1001, 21.3, 45.2, 'Test for 1/25/2026');
+
+CREATE TABLE lambda_test
+(
+  text_field TEXT
+);

@@ -1,23 +1,59 @@
 import psycopg2
 import os
+import json
+import boto3
+from botocore.exceptions import ClientError
+
 
 def lambda_handler(event, context):
-    conn = psycopg2.connect(
-        host="ec2-54-163-26-24.compute-1.amazonaws.com",
-        port="5432",
-        dbname="developer",
-        user="",
-        password=""
+
+    secret_name = "lambda_to_db_secret"
+    region_name = "us-east-1"
+
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
     )
-    cursor = conn.cursor()
 
-#    for record in event['Records']:
-#        body = record['body']
-#        # Insert into PostgreSQL
-#        cursor.execute("INSERT INTO test_tables.sqs_test (message_body) VALUES (%s)", (body,))
-#        conn.commit()
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        raise e
+    print(get_secret_value_response)
 
-    cursor.close()
-    conn.close()
+    secret = get_secret_value_response['SecretString']
+    creds = json.loads(secret)
+
+    conn = psycopg2.connect(
+        host=creds["host"],
+        port=creds["port"],
+        dbname=creds["dbname"],
+        user=creds["username"],
+        password=creds["password"]
+    )
+    
+    try: 
+        cursor = conn.cursor()
+
+        for record in event['Records']:
+            body = record['body']
+            # Insert into PostgreSQL
+            cursor.execute("INSERT INTO testing_grounds.lambda_test (text_field) VALUES (%s)", (body,))
+        conn.commit()
+
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+        if conn:
+            conn.rollback()
+        raise
+
+    finally:
+        if cursor: 
+            cursor.close() 
+        if conn: 
+            conn.close()
+
     return {"status": "success"}
-
