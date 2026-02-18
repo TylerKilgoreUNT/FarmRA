@@ -22,22 +22,23 @@ document.addEventListener('DOMContentLoaded', function(){
         // Handle menu item clicks
         userDropdown.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                e.preventDefault();
                 const action = e.currentTarget.textContent.trim().toLowerCase();
                 
                 switch(action) {
                     case 'account info':
+						e.preventDefault();
                         console.log('Show account info');
                         // TODO: Implement account info view
                         break;
                     case 'change password':
+						e.preventDefault();
                         console.log('Show password change');
                         // TODO: Implement password change
                         break;
                     case 'log out':
-                        console.log('Logging out');
-                        // TODO: Implement logout
-                        break;
+						e.preventDefault();
+						globalThis.location.href = 'https://www.google.com';
+						return;
                 }
 
                 // Close menu after action
