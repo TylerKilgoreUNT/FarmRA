@@ -19,6 +19,11 @@ html body {
   padding-top: var(--top-bar-height);
 }
 
+html body.login-page {
+  padding-top: 0;
+  overflow: hidden;
+}
+
 body .top-bar {
   height: var(--top-bar-height);
   padding: 0 clamp(0.75rem, 3vw, 1.5rem);
@@ -685,7 +690,7 @@ main > #map {
 }
 
 .btn-login {
-  background: linear-gradient(180deg, #1fb75a 0%, #149245 100%);
+  background: linear-gradient(135deg, #229A6C 0%, #22B07D 100%);
 }
 
 .oauth-btn.google {

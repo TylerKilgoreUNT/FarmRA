@@ -27,6 +27,11 @@ body{
 	background-color: var(--main-bg);
 }
 
+body.login-page{
+	height: 100dvh;
+	overflow: hidden;
+}
+
 /* Sidebar common (used for both left columns) */
 .sidebar{
 	position: fixed;
@@ -380,7 +385,8 @@ main{
 	display:flex;
 	align-items:center;
 	justify-content:center;
-	min-height:100vh;
+	min-height:100dvh;
+	height: 100dvh;
 	padding: 2rem;
 	background-image: url('/assets/LoginBackground.jpg');
 	background-size: cover;
@@ -459,8 +465,8 @@ main{
 .remember-forgot{ display:flex; justify-content:space-between; align-items:center; font-size:14px; }
 .remember-forgot a{ color: rgba(255,255,255,0.85); text-decoration:underline; }
 
-.btn-login{ width:100%; padding:10px 12px; border-radius:8px; background: #16a34a; color:#fff; border:0; font-weight:600; cursor:pointer; margin-top:8px }
-.btn-login:hover{ opacity:0.95; }
+.btn-login{ width:100%; padding:10px 12px; border-radius:8px; background: linear-gradient(135deg, #229A6C 0%, #22B07D 100%); color:#fff; border:0; font-weight:600; cursor:pointer; margin-top:8px; transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: 0 8px 20px rgba(34,154,108,0.35); }
+.btn-login:hover{ transform: translateY(-1px); filter: brightness(1.03); box-shadow: 0 10px 24px rgba(34,176,125,0.4); }
 
 .oauth-row{ display:flex; justify-content:center; margin:14px 0; }
 .oauth-btn{ display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:8px; text-decoration:none; color:#111; font-weight:600; gap:10px }
