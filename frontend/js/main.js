@@ -156,14 +156,18 @@ let allTabTimeseriesSensor = "light";
 const GRAFANA_LINKS = {
   all: {
     gauges: {
-      light: "",
-      moisture: "",
+      light: 
+      "",
+      moisture: 
+      "",
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
     },
     timeseries: {
-      light: "",
-      moisture: "",
+      light: 
+      "",
+      moisture: 
+      "",
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
     },
@@ -171,8 +175,10 @@ const GRAFANA_LINKS = {
   },
   metrics: {
     light: {
-      gauge: "",
-      timeseries: "",
+      gauge: 
+      "",
+      timeseries: 
+      "",
       heatmap: "",
       table: "",
     },
