@@ -143,53 +143,202 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /*
- * Dynamic renderer for grafana content.
- * - 'all' shows the original 3-panel layout (full + two halves)
- * - 'light' | 'moisture' | 'temperature' show a single full-width panel
+ * Configure Grafana iframe links here.
  *
- * You can customize the URLs in `sensorUrls` to point to specific Grafana panels.
+ * - `all`: three gauges (light/moisture/temperature), three timeseries,
+ *   and one table.
+ * - `metrics`: each metric has four panel links: gauge, timeseries, heatmap, table.
+ */
+const METRIC_PANEL_TYPES = ["gauge", "timeseries", "heatmap", "table"];
+const SENSOR_TYPES = ["light", "moisture", "temperature"];
+let allTabTimeseriesSensor = "light";
+
+const GRAFANA_LINKS = {
+  all: {
+    gauges: {
+      light: "",
+      moisture: "",
+      temperature:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+    },
+    timeseries: {
+      light: "",
+      moisture: "",
+      temperature:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+    },
+    table: "",
+  },
+  metrics: {
+    light: {
+      gauge: "",
+      timeseries: "",
+      heatmap: "",
+      table: "",
+    },
+    moisture: {
+      gauge: "",
+      timeseries: "",
+      heatmap: "",
+      table: "",
+    },
+    temperature: {
+      gauge:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+      timeseries:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+      heatmap:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+      table:
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
+    },
+  },
+};
+
+function setOrAppendQueryParam(url, key, value) {
+  if (!url) return "";
+
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const existingParamRegex = new RegExp(`([?&])${escapedKey}=[^&]*`);
+  if (existingParamRegex.test(url)) {
+    return url.replace(existingParamRegex, `$1${key}=${encodeURIComponent(value)}`);
+  }
+
+  const joiner = url.includes("?") ? "&" : "?";
+  return `${url}${joiner}${key}=${encodeURIComponent(value)}`;
+}
+
+function formatPanelLabel(panelType) {
+  if (panelType === "timeseries") return "Time Series";
+  return panelType.charAt(0).toUpperCase() + panelType.slice(1);
+}
+
+function normalizeSensor(sensor) {
+  return SENSOR_TYPES.includes(sensor) ? sensor : "light";
+}
+
+function getAllPanelFallbackSrc(baseSrc, panelType, sensor) {
+  const withSensor = setOrAppendQueryParam(baseSrc, "var-sensor", sensor);
+  return setOrAppendQueryParam(withSensor, "var-panel", panelType);
+}
+
+function getAllPanelSrc({ panelType, sensor, baseSrc, detectedAllUrls, detectedIndex }) {
+  const explicitSrc =
+    panelType === "table"
+      ? GRAFANA_LINKS.all.table
+      : GRAFANA_LINKS.all[`${panelType}s`]?.[sensor] || "";
+
+  const detectedSrc = detectedAllUrls[detectedIndex] || "";
+  const fallbackSensor = panelType === "table" ? "all" : sensor;
+  const derivedSrc = getAllPanelFallbackSrc(baseSrc, panelType, fallbackSensor);
+
+  return explicitSrc || detectedSrc || derivedSrc;
+}
+
+/*
+ * Dynamic renderer for grafana content.
+ * - 'all' shows all configured boxes
+ * - 'light' | 'moisture' | 'temperature' show four panels
  */
 function renderSensor(sensor) {
   const container = document.querySelector(".grafana-flex");
   if (!container) return;
 
-  // Try to use an existing iframe src as a base; fallback to a placeholder
-  const firstIframe = document.querySelector(".grafana-flex iframe");
-  const baseSrc = firstIframe ? firstIframe.src : "";
+  const detectedAllUrls = Array.from(
+    container.querySelectorAll(".grafanaContainer iframe"),
+  )
+    .map((iframe) => iframe.src)
+    .filter(Boolean);
 
-  // Customize per-sensor URLs here. By default we append a variable so you can
-  // use templated dashboards in Grafana (update as needed).
-  const sensorUrls = {
-    all: baseSrc,
-    light: baseSrc ? baseSrc + "&var-sensor=light" : "",
-    moisture: baseSrc ? baseSrc + "&var-sensor=moisture" : "",
-    temperature: baseSrc ? baseSrc + "&var-sensor=temperature" : "",
-  };
+  const fallbackAllUrls = detectedAllUrls;
+  const baseSrc = fallbackAllUrls[0] || "";
 
-  // Build HTML for the different layouts
   if (sensor === "all" || !sensor) {
+    allTabTimeseriesSensor = normalizeSensor(allTabTimeseriesSensor);
+
+    const gaugePanels = SENSOR_TYPES.map((sensorType, index) => {
+      const src = getAllPanelSrc({
+        panelType: "gauge",
+        sensor: sensorType,
+        baseSrc,
+        detectedAllUrls,
+        detectedIndex: index,
+      });
+      const label = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Gauge`;
+
+      return `
+        <div class="grafanaContainer grafanaContainer-half">
+          <iframe src="${src}" width="100%" height="320px" frameborder="0" title="${label}"></iframe>
+        </div>
+      `;
+    }).join("");
+
+    const timeseriesSensor = allTabTimeseriesSensor;
+    const timeseriesIndex = 3 + SENSOR_TYPES.indexOf(timeseriesSensor);
+    const timeseriesSrc = getAllPanelSrc({
+      panelType: "timeseries",
+      sensor: timeseriesSensor,
+      baseSrc,
+      detectedAllUrls,
+      detectedIndex: timeseriesIndex,
+    });
+
+    const tableSrc = getAllPanelSrc({
+      panelType: "table",
+      sensor: "all",
+      baseSrc,
+      detectedAllUrls,
+      detectedIndex: 6,
+    });
+
+    const timeseriesToggles = SENSOR_TYPES.map((sensorType) => {
+      const isActive = sensorType === timeseriesSensor;
+      const label = sensorType.charAt(0).toUpperCase() + sensorType.slice(1);
+      return `<button class="all-timeseries-toggle side-btn${isActive ? " active" : ""}" data-sensor="${sensorType}" type="button">${label}</button>`;
+    }).join("");
+
     container.innerHTML = `
-			<div class="grafanaContainer grafanaContainer-full">
-				<iframe src="${sensorUrls.all}" width="100%" height="400px" frameborder="0" title="Grafana Panel 1"></iframe>
-			</div>
-			<div class="grafana-half-row">
-				<div class="grafanaContainer grafanaContainer-half">
-					<iframe src="${sensorUrls.all}" width="100%" height="400px" frameborder="0" title="Grafana Panel 2"></iframe>
-				</div>
-				<div class="grafanaContainer grafanaContainer-half">
-					<iframe src="${sensorUrls.all}" width="100%" height="400px" frameborder="0" title="Grafana Panel 3"></iframe>
-				</div>
-			</div>
-		`;
+      <div class="grafana-all-layout">
+        <div class="grafana-all-row grafana-all-gauges">${gaugePanels}</div>
+        <div class="grafana-all-row grafana-all-timeseries">
+          <div class="grafana-all-timeseries-content">
+            <div class="grafana-all-timeseries-controls">${timeseriesToggles}</div>
+            <div class="grafanaContainer grafanaContainer-full">
+              <iframe src="${timeseriesSrc}" width="100%" height="400px" frameborder="0" title="${timeseriesSensor} Time Series"></iframe>
+            </div>
+          </div>
+        </div>
+        <div class="grafana-all-row grafana-all-table">
+          <div class="grafanaContainer grafanaContainer-full">
+            <iframe src="${tableSrc}" width="100%" height="400px" frameborder="0" title="All Sensors Table"></iframe>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.querySelectorAll(".all-timeseries-toggle").forEach((toggleBtn) => {
+      toggleBtn.addEventListener("click", () => {
+        allTabTimeseriesSensor = normalizeSensor(toggleBtn.dataset.sensor);
+        renderSensor("all");
+      });
+    });
   } else {
-    // single full-width panel for the selected sensor
-    const src = sensorUrls[sensor] || baseSrc;
-    container.innerHTML = `
-			<div class="grafanaContainer grafanaContainer-full">
-				<iframe src="${src}" width="100%" height="600px" frameborder="0" title="${sensor} panel"></iframe>
-			</div>
-		`;
+    const metricConfig = GRAFANA_LINKS.metrics[sensor] || {};
+    const metricBase = setOrAppendQueryParam(baseSrc, "var-sensor", sensor);
+
+    const metricBoxes = METRIC_PANEL_TYPES.map((panelType) => {
+      const fallback = setOrAppendQueryParam(metricBase, "var-panel", panelType);
+      const src = metricConfig[panelType] || fallback;
+      const panelLabel = formatPanelLabel(panelType);
+
+      return `
+        <div class="grafanaContainer grafanaContainer-half">
+          <iframe src="${src}" width="100%" height="400px" frameborder="0" title="${sensor} ${panelLabel}"></iframe>
+        </div>
+      `;
+    }).join("");
+
+    container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
   }
 
-  // Re-attach any behaviors if needed (none required at the moment)
 }
