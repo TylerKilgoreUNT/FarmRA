@@ -235,10 +235,15 @@ function getAllPanelFallbackSrc(baseSrc, panelType, sensor) {
 }
 
 function getAllPanelSrc({ panelType, sensor, baseSrc, detectedAllUrls, detectedIndex }) {
+  const allPanelCollections = {
+    gauge: "gauges",
+    timeseries: "timeseries",
+  };
+
   const explicitSrc =
     panelType === "table"
       ? GRAFANA_LINKS.all.table
-      : GRAFANA_LINKS.all[`${panelType}s`]?.[sensor] || "";
+      : GRAFANA_LINKS.all[allPanelCollections[panelType]]?.[sensor] || "";
 
   const detectedSrc = detectedAllUrls[detectedIndex] || "";
   const fallbackSensor = panelType === "table" ? "all" : sensor;
