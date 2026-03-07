@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //Added for displaying email
   async function loadUserEmail() {
     try {
-      const res = await fetch("/api/me");
+      const res = await fetch("/farmra-api/me");
       const data = await res.json();
 
       const emailSpan = document.getElementById("userEmail");
