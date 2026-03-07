@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 import os
 import psycopg2
+from functools import wraps
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for your web app to connect
@@ -17,6 +18,25 @@ def db_access():
         port=5432 
     )
 
+def get_user_role(email):
+    conn = db_access()
+    cur = conn.cursor()
+    cur.execute("SELECT role FROM users WHERE email = %s", (email,))
+    row = cur.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+# -----------------------------
+# Admin Decorator
+# -----------------------------
+#def require_admin(f):
+#    @wraps(f)
+#    def wrapper(*args, **kwargs):
+#        if session.get("role") != "admin":
+#            return jsonify({"error": "Forbidden"}), 403
+#        return f(*args, **kwargs)
+#    return wrapper
+
 def user_exists(email): 
     conn = db_access() 
     cur = conn.cursor() 
@@ -28,31 +48,95 @@ def user_exists(email):
 @app.before_request
 def load_user(): 
     # Allow public login page 
-    if request.path in ["/login", "/login.html"]: 
-        return 
+    #if request.path in ["/login", "/login.html"]: 
+    #    return 
     
     user_email = request.headers.get("X-User-Email") 
-    user_name = request.headers.get("X-User-Name")
+    #user_name = request.headers.get("X-User-Name")
 
     if not user_email: 
         return redirect("/login.html") 
     
     # Store user info in Flask session 
     session["email"] = user_email 
-    session["name"] =  user_name
+    #session["name"] =  user_name
 
     # Check if user exists in PostgreSQL 
-    if not user_exists(user_email): 
-        return "Access denied: email not registered", 403
+    #if not user_exists(user_email): 
+    #    return "Access denied: email not registered", 403
+
+@app.route("/api/me")
+def me():
+    return jsonify({
+        "email": session.get("email")
+    })
+
+# -----------------------------
+# Before Request: Auth + Role Check
+# -----------------------------
+#@app.before_request
+#def load_user():
+#    public_paths = [
+#        "/login",
+#        "/login.html",
+#        "/oidc/callback",
+#        "/api/route_user"
+#    ]
+#
+#    # Allow public pages
+#    if request.path in public_paths:
+#        return
+#
+#    # Apache injects these headers after OIDC login
+#    email = request.headers.get("X-User-Email")
+#    name = request.headers.get("X-User-Name")
+#
+#    if not email:
+#        return redirect("/login.html")
+#
+#    session["email"] = email
+#    session["name"] = name
+#
+#    # Check DB for user + role
+#    role = get_user_role(email)
+#    if not role:
+#        session.clear()
+#        return redirect("/login.html?error=not_registered")
+#
+#    session["role"] = role
 
 @app.route("/") 
 def root(): 
     return redirect("/index")
 
-@app.route("/logout") 
-def logout(): 
-    session.clear() 
-    return redirect("/oidc/callback?logout=https://farmra.net/login.html")
+# -----------------------------
+# Post-OIDC Routing Endpoint
+# -----------------------------
+#@app.route("/api/route_user")
+#def route_user():
+#    email = request.headers.get("X-User-Email")
+#    name = request.headers.get("X-User-Name")
+#
+#    if not email:
+#        return redirect("/login.html")
+#
+#    role = get_user_role(email)
+#
+#    if not role:
+#        return redirect("/login.html?error=not_registered")
+#
+#    if role == "admin":
+#        return redirect("/admin.html")
+#
+#    if role == "user":
+#        return redirect("/index.html")
+#
+#    return redirect("/login.html?error=invalid_role")
+
+#@app.route("/logout") 
+#def logout(): 
+#    session.clear() 
+#    return redirect("/oidc/callback?logout=https://farmra.net/login.html")
 
 # Sample data (replace with database later)
 items = [
@@ -97,6 +181,23 @@ def delete_item(item_id):
     global items
     items = [item for item in items if item['id'] != item_id]
     return jsonify({"message": "Item deleted"}), 200
+
+# -----------------------------
+# Admin API Example
+# -----------------------------
+#@app.route("/api/admin/users", methods=["GET"])
+#@require_admin
+#def list_users():
+#    conn = db_access()
+#    cur = conn.cursor()
+#    cur.execute("SELECT email, name, role FROM users")
+#    rows = cur.fetchall()
+#    conn.close()
+#
+#    return jsonify([
+#        {"email": r[0], "name": r[1], "role": r[2]}
+#        for r in rows
+#    ])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
