@@ -1,3 +1,6 @@
+const GRAFANA_LOADER_TIMEOUT_MS = 20000;
+let grafanaLoaderTimeoutId = null;
+
 document.addEventListener("DOMContentLoaded", function () {
   // User menu functionality
   const userMenuBtn = document.getElementById("userMenuBtn");
@@ -28,12 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
           case "account info":
             e.preventDefault();
             console.log("Show account info");
-            // TODO: Implement account info view
+            // Account info view is not implemented on this page.
             break;
           case "change password":
             e.preventDefault();
             console.log("Show password change");
-            // TODO: Implement password change
+            // Password change view is not implemented on this page.
             break;
           case "log out":
             e.preventDefault();
@@ -210,14 +213,21 @@ const GRAFANA_LINKS = {
 function setOrAppendQueryParam(url, key, value) {
   if (!url) return "";
 
-  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const existingParamRegex = new RegExp(`([?&])${escapedKey}=[^&]*`);
-  if (existingParamRegex.test(url)) {
-    return url.replace(existingParamRegex, `$1${key}=${encodeURIComponent(value)}`);
-  }
+  const hashIndex = url.indexOf("#");
+  const hasHash = hashIndex >= 0;
+  const hash = hasHash ? url.slice(hashIndex) : "";
+  const withoutHash = hasHash ? url.slice(0, hashIndex) : url;
 
-  const joiner = url.includes("?") ? "&" : "?";
-  return `${url}${joiner}${key}=${encodeURIComponent(value)}`;
+  const queryIndex = withoutHash.indexOf("?");
+  const path = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+  const queryString = queryIndex >= 0 ? withoutHash.slice(queryIndex + 1) : "";
+
+  const params = new URLSearchParams(queryString);
+  params.set(key, value);
+
+  const serialized = params.toString();
+  const withQuery = serialized ? `${path}?${serialized}` : path;
+  return `${withQuery}${hash}`;
 }
 
 function formatPanelLabel(panelType) {
@@ -252,6 +262,83 @@ function getAllPanelSrc({ panelType, sensor, baseSrc, detectedAllUrls, detectedI
   return explicitSrc || detectedSrc || derivedSrc;
 }
 
+function showGrafanaLoader(message = "Loading dashboards...") {
+  const loader = document.getElementById("grafanaMainLoader");
+  const loaderText = document.getElementById("grafanaMainLoaderText");
+
+  if (!loader) {
+    return;
+  }
+
+  loader.classList.remove("is-hidden");
+  loader.setAttribute("aria-busy", "true");
+
+  if (loaderText) {
+    loaderText.textContent = message;
+  }
+}
+
+function hideGrafanaLoader() {
+  const loader = document.getElementById("grafanaMainLoader");
+  if (!loader) {
+    return;
+  }
+
+  loader.classList.add("is-hidden");
+  loader.setAttribute("aria-busy", "false");
+}
+
+function trackGrafanaIframeLoading(container) {
+  if (!container) {
+    hideGrafanaLoader();
+    return;
+  }
+
+  const iframes = Array.from(container.querySelectorAll("iframe"));
+
+  if (grafanaLoaderTimeoutId) {
+    globalThis.clearTimeout(grafanaLoaderTimeoutId);
+    grafanaLoaderTimeoutId = null;
+  }
+
+  if (iframes.length === 0) {
+    hideGrafanaLoader();
+    return;
+  }
+
+  const total = iframes.length;
+  let remaining = total;
+  let settled = false;
+
+  showGrafanaLoader(
+    `Loading ${total} dashboard${total === 1 ? "" : "s"}...`,
+  );
+
+  const handleLoaded = () => {
+    remaining -= 1;
+    if (remaining <= 0 && !settled) {
+      settled = true;
+      if (grafanaLoaderTimeoutId) {
+        globalThis.clearTimeout(grafanaLoaderTimeoutId);
+        grafanaLoaderTimeoutId = null;
+      }
+      hideGrafanaLoader();
+    }
+  };
+
+  iframes.forEach((iframe) => {
+    iframe.addEventListener("load", handleLoaded, { once: true });
+  });
+
+  grafanaLoaderTimeoutId = globalThis.setTimeout(() => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    hideGrafanaLoader();
+  }, GRAFANA_LOADER_TIMEOUT_MS);
+}
+
 /*
  * Dynamic renderer for grafana content.
  * - 'all' shows all configured boxes
@@ -259,7 +346,10 @@ function getAllPanelSrc({ panelType, sensor, baseSrc, detectedAllUrls, detectedI
  */
 function renderSensor(sensor) {
   const container = document.querySelector(".grafana-flex");
-  if (!container) return;
+  if (!container) {
+    hideGrafanaLoader();
+    return;
+  }
 
   const detectedAllUrls = Array.from(
     container.querySelectorAll(".grafanaContainer iframe"),
@@ -357,5 +447,7 @@ function renderSensor(sensor) {
 
     container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
   }
+
+  trackGrafanaIframeLoading(container);
 
 }

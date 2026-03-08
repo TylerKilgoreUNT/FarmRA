@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="farmra-admin-api-base" content="/api/admin" />
+		<link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico" />
+		<link rel="stylesheet" href="style/style.css" />
+		<link rel="stylesheet" href="style/media.css" />
+		<title>FarmRA Admin</title>
+	</head>
+	<body class="admin-page">
+		<nav id="top-bar" class="top-bar" aria-label="Top navigation">
+			<div class="farmra-logo">
+				<img src="/assets/FarmRA.png" alt="Farm Ra Logo" />
+			</div>
+			<div class="top-bar-left">
+				<h1>FarmRA Admin</h1>
+			</div>
+			<div class="top-bar-right">
+				<span class="admin-badge">Admin Tools</span>
+				<div class="user-menu">
+					<button
+						class="icon-btn"
+						title="User Settings"
+						data-action="settings"
+						id="userMenuBtn"
+						type="button"
+					>
+						<svg
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true"
+						>
+							<path
+								d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+								fill="currentColor"
+							/>
+						</svg>
+					</button>
+					<div class="dropdown-menu" id="userDropdown" hidden>
+						<div class="menu-header">
+							<span class="user-email" id="adminUserEmail">admin@farmra.net</span>
+						</div>
+						<div class="menu-items">
+							<a href="index.html" class="menu-item">
+								<span>Dashboard</span>
+							</a>
+							<a href="map.html" class="menu-item">
+								<span>Map</span>
+							</a>
+							<hr class="menu-divider" />
+							<a
+								href="/oidc/callback?logout=https://farmra.net/login.html"
+								class="menu-item text-danger"
+							>
+								<span>Log Out</span>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<nav
+			id="left-panel"
+			class="sidebar left-panel"
+			aria-label="Secondary navigation"
+		>
+			<div class="sidebar-header">
+				<h3>Admin Actions</h3>
+			</div>
+			<div class="sidebar-section admin-actions">
+				<button class="side-btn active" data-target="create-user" type="button">
+					Create User
+				</button>
+				<button class="side-btn" data-target="user-list" type="button">
+					View Users
+				</button>
+			</div>
+		</nav>
+
+		<nav
+			id="left-narrow"
+			class="sidebar left-narrow"
+			aria-label="Primary navigation"
+		>
+			<div>
+				<a href="index.html" class="icon-btn admin-nav-icon" title="Dashboard">
+					<svg
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+					>
+						<path
+							d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H14V14H10V21H4C3.45 21 3 20.55 3 20V10.5Z"
+							fill="currentColor"
+						/>
+					</svg>
+				</a>
+				<button class="icon-btn admin-nav-icon active" title="Admin" type="button">
+					<svg
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+					>
+						<path
+							d="M12 2L14.5 7.5L20.5 8.2L16 12.2L17.2 18L12 15L6.8 18L8 12.2L3.5 8.2L9.5 7.5L12 2Z"
+							fill="currentColor"
+						/>
+					</svg>
+				</button>
+			</div>
+			<div>
+				<a href="map.html" class="icon-btn map" title="Map" data-action="map"></a>
+			</div>
+		</nav>
+
+		<main>
+			<section class="admin-shell" aria-label="Admin content">
+				<header class="admin-header">
+					<h2>User Setup and Gateway Access</h2>
+					<p>
+						Create users with their Google email and review all existing users.
+					</p>
+				</header>
+
+				<div id="adminStatus" class="admin-status" hidden></div>
+
+				<div class="admin-grid">
+					<section id="create-user" class="admin-card" aria-labelledby="create-user-title">
+						<h3 id="create-user-title">Create User</h3>
+						<form id="createUserForm" class="admin-form" novalidate>
+							<label for="firstName">First Name</label>
+							<input id="firstName" name="firstName" type="text" autocomplete="given-name" required />
+
+							<label for="lastName">Last Name</label>
+							<input id="lastName" name="lastName" type="text" autocomplete="family-name" required />
+
+							<label for="googleEmail">Google Email Address</label>
+							<input
+								id="googleEmail"
+								name="googleEmail"
+								type="email"
+								autocomplete="email"
+								placeholder="name@company.com"
+								required
+							/>
+
+							<fieldset class="gateway-fieldset">
+								<legend>Initial Gateway Access</legend>
+								<p class="helper-text">Choose one or more gateways.</p>
+								<div id="createGatewayList" class="gateway-list"></div>
+							</fieldset>
+
+							<button type="submit" class="btn-login admin-submit">Create User</button>
+						</form>
+					</section>
+				</div>
+
+				<section id="user-list" class="admin-card" aria-labelledby="user-list-title">
+					<div class="admin-card-heading">
+						<h3 id="user-list-title">Existing Users</h3>
+						<button id="refreshUsersBtn" class="side-btn admin-refresh-btn" type="button">
+							Refresh Data
+						</button>
+					</div>
+					<div class="admin-table-wrap">
+						<table class="admin-table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Google Email</th>
+								</tr>
+							</thead>
+							<tbody id="usersTableBody">
+								<tr class="empty-row">
+									<td colspan="2">No users found.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+			</section>
+		</main>
+
+		<script src="js/admin.js" defer></script>
+	</body>
+</html>
