@@ -40,6 +40,14 @@ def lambda_handler(event, context):
 
         for record in event['Records']:
             body = record['body']
+            sensor_data = json.loads(record['body'])
+
+            node_id = sensor_data['id']
+            temperature = sensor_data['temperature']
+            moisture = sensor_data['moisture']
+            light = sensor_data['light']
+            battery = sensor_data['battery_life']
+
             # Insert into PostgreSQL
             cursor.execute("INSERT INTO testing_grounds.lambda_test (text_field) VALUES (%s)", (body,))
         conn.commit()

@@ -10,7 +10,10 @@ echo "Copying files to /var/www/html..."
 sudo rm -rf /var/www/html/farmra.net/*
 sudo cp -r ~/FarmRA/frontend/* /var/www/html/farmra.net/
 
+# Copy backend files to flask folder
+sudo cp -r ~/FarmRA/backend/* ~/FarmRA-Backend/
+
 # Copies deployment script to home directory" 
 cp ~/FarmRA/deploy/deploy.sh ~/deploy.sh
 
-echo "Repository copied to web root"
+echo "Repository deployed"

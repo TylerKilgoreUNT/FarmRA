@@ -2,6 +2,24 @@ const GRAFANA_LOADER_TIMEOUT_MS = 20000;
 let grafanaLoaderTimeoutId = null;
 
 document.addEventListener("DOMContentLoaded", function () {
+  //Added for displaying email
+  async function loadUserEmail() {
+    try {
+      const res = await fetch("/farmra-api/me");
+      const data = await res.json();
+
+      const emailSpan = document.getElementById("userEmail");
+      if (emailSpan && data.email) {
+        emailSpan.textContent = data.email;
+      }
+    } catch (err) {
+      console.error("Failed to load user email:", err);
+    }
+  }
+
+  loadUserEmail();
+  //End user email
+
   // User menu functionality
   const userMenuBtn = document.getElementById("userMenuBtn");
   const userDropdown = document.getElementById("userDropdown");
@@ -159,17 +177,17 @@ let allTabTimeseriesSensor = "light";
 const GRAFANA_LINKS = {
   all: {
     gauges: {
-      light: 
+      light:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
-      moisture: 
+      moisture:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
     },
     timeseries: {
-      light: 
+      light:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
-      moisture: 
+      moisture:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
@@ -178,23 +196,23 @@ const GRAFANA_LINKS = {
   },
   metrics: {
     light: {
-      gauge: 
+      gauge:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
-      timeseries: 
+      timeseries:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
-      heatmap: 
+      heatmap:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
-      table: 
+      table:
         "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
     },
     moisture: {
-      gauge: 
+      gauge:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
-      timeseries: 
+      timeseries:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
-      heatmap: 
+      heatmap:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
-      table: 
+      table:
         "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
     },
     temperature: {
@@ -244,7 +262,13 @@ function getAllPanelFallbackSrc(baseSrc, panelType, sensor) {
   return setOrAppendQueryParam(withSensor, "var-panel", panelType);
 }
 
-function getAllPanelSrc({ panelType, sensor, baseSrc, detectedAllUrls, detectedIndex }) {
+function getAllPanelSrc({
+  panelType,
+  sensor,
+  baseSrc,
+  detectedAllUrls,
+  detectedIndex,
+}) {
   const allPanelCollections = {
     gauge: "gauges",
     timeseries: "timeseries",
@@ -423,18 +447,24 @@ function renderSensor(sensor) {
       </div>
     `;
 
-    container.querySelectorAll(".all-timeseries-toggle").forEach((toggleBtn) => {
-      toggleBtn.addEventListener("click", () => {
-        allTabTimeseriesSensor = normalizeSensor(toggleBtn.dataset.sensor);
-        renderSensor("all");
+    container
+      .querySelectorAll(".all-timeseries-toggle")
+      .forEach((toggleBtn) => {
+        toggleBtn.addEventListener("click", () => {
+          allTabTimeseriesSensor = normalizeSensor(toggleBtn.dataset.sensor);
+          renderSensor("all");
+        });
       });
-    });
   } else {
     const metricConfig = GRAFANA_LINKS.metrics[sensor] || {};
     const metricBase = setOrAppendQueryParam(baseSrc, "var-sensor", sensor);
 
     const metricBoxes = METRIC_PANEL_TYPES.map((panelType) => {
-      const fallback = setOrAppendQueryParam(metricBase, "var-panel", panelType);
+      const fallback = setOrAppendQueryParam(
+        metricBase,
+        "var-panel",
+        panelType,
+      );
       const src = metricConfig[panelType] || fallback;
       const panelLabel = formatPanelLabel(panelType);
 
@@ -447,7 +477,5 @@ function renderSensor(sensor) {
 
     container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
   }
-
-  trackGrafanaIframeLoading(container);
 
 }
