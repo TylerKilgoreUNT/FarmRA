@@ -3,21 +3,35 @@ let grafanaLoaderTimeoutId = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   //Added for displaying email
-  async function loadUserEmail() {
+  async function loadUserInfo() {
     try {
-      const res = await fetch("/farmra-api/me");
+      const res = await fetch("/farmra-api/user-info");
       const data = await res.json();
 
+      //Users Email
       const emailSpan = document.getElementById("userEmail");
       if (emailSpan && data.email) {
         emailSpan.textContent = data.email;
+      }
+
+      //Users Name
+      const nameSpan = document.getElementById("userName");
+      if (nameSpan && data.name) {
+        nameSpan.textContent = data.name;
+      }
+
+      //Users Profile Picture
+      const img = document.getElementById("userImage");
+      if (img && data.picture) {
+        img.src = data.picture;
+        img.alt = `${data.name}'s profile picture`;
       }
     } catch (err) {
       console.error("Failed to load user email:", err);
     }
   }
 
-  loadUserEmail();
+  loadUserInfo();
   //End user email
 
   // User menu functionality
@@ -334,9 +348,7 @@ function trackGrafanaIframeLoading(container) {
   let remaining = total;
   let settled = false;
 
-  showGrafanaLoader(
-    `Loading ${total} dashboard${total === 1 ? "" : "s"}...`,
-  );
+  showGrafanaLoader(`Loading ${total} dashboard${total === 1 ? "" : "s"}...`);
 
   const handleLoaded = () => {
     remaining -= 1;
@@ -477,5 +489,4 @@ function renderSensor(sensor) {
 
     container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
   }
-
 }
