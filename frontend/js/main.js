@@ -13,19 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (emailSpan && data.email) {
         emailSpan.textContent = data.email;
       }
-
-      //Users Name
-      const nameSpan = document.getElementById("userName");
-      if (nameSpan && data.name) {
-        nameSpan.textContent = data.name;
-      }
-
-      //Users Profile Picture
-      const img = document.getElementById("userImage");
-      if (img && data.picture) {
-        img.src = data.picture;
-        img.alt = `${data.name}'s profile picture`;
-      }
     } catch (err) {
       console.error("Failed to load user email:", err);
     }
