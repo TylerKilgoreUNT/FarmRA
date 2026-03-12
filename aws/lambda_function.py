@@ -48,6 +48,11 @@ def lambda_handler(event, context):
             light = sensor_data['light']
             battery = sensor_data['battery_life']
 
+            #SELECT node_id
+            #FROM nodes
+            #WHERE gateway_id = ?
+            #AND node_name = ?;
+
             # Insert into PostgreSQL
             cursor.execute("INSERT INTO testing_grounds.lambda_test (text_field) VALUES (%s)", (body,))
         conn.commit()
