@@ -65,6 +65,10 @@ def load_user():
     #if not user_exists(user_email): 
     #    return "Access denied: email not registered", 403
 
+@app.route("/debug-headers")
+def debug_headers():
+    return jsonify(dict(request.headers))
+
 @app.route("/me")
 def me():
     return jsonify({
