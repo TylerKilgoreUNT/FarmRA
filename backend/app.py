@@ -52,27 +52,25 @@ def load_user():
     #    return 
     
     user_email = request.headers.get("X-User-Email") 
-    user_name = request.headers.get("X-User-Name")
-    user_picture = request.headers.get("X-User-Picture")
+    #user_name = request.headers.get("X-User-Name")
+    #user_picture = request.headers.get("X-User-Picture")
 
     if not user_email: 
         return redirect("/login.html") 
     
     # Store user info in Flask session 
     session["email"] = user_email 
-    session["name"] =  user_name
-    session["picture"] = user_picture
+    #session["name"] =  user_name
+    #session["picture"] = user_picture
 
     # Check if user exists in PostgreSQL 
     #if not user_exists(user_email): 
     #    return "Access denied: email not registered", 403
 
-@app.route("/user-info")
+@app.route("/me")
 def me():
     return jsonify({
         "email": session.get("email"),
-        "name": session.get("name"),
-        "picture": session.get("picture")
     })
 
 # -----------------------------

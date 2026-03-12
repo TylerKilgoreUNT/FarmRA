@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //Added for displaying email
   async function loadUserInfo() {
     try {
-      const res = await fetch("/farmra-api/user-info");
+      const res = await fetch("/farmra-api/me");
       const data = await res.json();
 
       //Users Email
