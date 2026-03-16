@@ -46,6 +46,7 @@ BEGIN
         CONSTRAINT nodes_pk PRIMARY KEY(n_id),
         CONSTRAINT gateways_fk FOREIGN KEY(g_id_fk) 
                         REFERENCES node_data.gateways(g_id)
+        CONSTRAINT unique_name_gid UNIQUE (g_id_fk, n_name)
     );
 
     CREATE TABLE measurements
@@ -72,7 +73,7 @@ GRANT INSERT ON TABLE node_data.measurements TO user_lambda;
 
 GRANT USAGE ON SCHEMA testing_grounds TO user_lambda;
 GRANT INSERT ON TABLE testing_grounds.test_measurements TO user_lambda;
-
+GRANT SELECT ON TABLE testing_grounds.nodes TO user_lambda;
 
 GRANT CONNECT ON DATABASE farmra TO user_grafana;
 GRANT USAGE ON SCHEMA node_data TO user_grafana;

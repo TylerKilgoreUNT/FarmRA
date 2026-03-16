@@ -1,7 +1,4 @@
-import psycopg2
-import os
-import json
-import boto3
+import psycopg2, os, json, boto3, datetime
 from botocore.exceptions import ClientError
 
 
@@ -42,19 +39,32 @@ def lambda_handler(event, context):
             body = record['body']
             sensor_data = json.loads(record['body'])
 
-            node_id = sensor_data['id']
-            temperature = sensor_data['temperature']
-            moisture = sensor_data['moisture']
-            light = sensor_data['light']
-            battery = sensor_data['battery_life']
+            # Take time from sqs and convert to timestampz format for psql
+            attributes = record['attributes']
+            sent_timestamp_ms = int(attributes['SentTimestamp'])
+            timestampz = datetime.datetime.fromtimestamp((sent_timestamp_ms / 1000.0), tz=datetime.timezone.utc)
 
-            #SELECT node_id
-            #FROM nodes
-            #WHERE gateway_id = ?
-            #AND node_name = ?;
+            node_name = sensor_data['deviceName']
+            gateway_id = sensor_data['gatewayId']
+            temperature = sensor_data['data']['temp']
+            moisture = sensor_data['data']['moisture']
+            light = sensor_data['data']['light']
+            #battery = sensor_data['data']['battery']
+
+            # Finds the node ID from the nodes table that matches the gateway id and node name from sensors
+            cursor.execute("SELECT n_id FROM testing_grounds.nodes WHERE g_id_fk = %s AND n_name = %s", (gateway_id, node_name))
+            result = cursor.fetchone()
+            if result:
+                node_id = result[0]
+            else:
+                raise ValueError(f"No node found for gateway_id={gateway_id} and node_name='{node_name}'")
+
+            # Define sql query parameters 
+            sql_insert = "INSERT INTO testing_grounds.live_measurements (m_time, n_id_fk, m_temperature, m_moist, m_light) VALUES (%s, %s, %s, %s, %s)"
+            sql_data = (timestampz, node_id, temperature, moisture, light)
 
             # Insert into PostgreSQL
-            cursor.execute("INSERT INTO testing_grounds.lambda_test (text_field) VALUES (%s)", (body,))
+            cursor.execute(sql_insert, sql_data)
         conn.commit()
 
     except (Exception, psycopg2.Error) as error:

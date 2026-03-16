@@ -1,4 +1,7 @@
---Test Data
+{"gatewayId": "657d6f412cfcaf87", "deviceName": "node 1", "data": {"moisture": 1, "light": 0, "temp": 56}}
+
+
+-------------------------------------------------------------------------------
 
 INSERT INTO users (u_name, u_id) 
 VALUES ('Bob', 100), ('Josh', 200), ('Mike', 300);
@@ -28,8 +31,6 @@ CREATE TABLE live_measurements
     CONSTRAINT nodes_fk FOREIGN KEY(n_id_fk) 
       REFERENCES testing_grounds.nodes(n_id)
 );
-
-{"gatewayId": "657d6f412cfcaf87", "deviceName": "test", "data": {"moisture": 3, "light": 1, "temp": 890}}
 
 -------------------------------------------------------------------------------------------------------
 
