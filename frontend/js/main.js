@@ -13,8 +13,14 @@ document.addEventListener("DOMContentLoaded", function () {
       if (emailSpan && data.email) {
         emailSpan.textContent = data.email;
       }
+
+      //Users Name - Display greeting
+      const greetingSpan = document.getElementById("userGreeting");
+      if (greetingSpan && data.name) {
+        greetingSpan.textContent = `Hi, ${data.name}!`;
+      }
     } catch (err) {
-      console.error("Failed to load user email:", err);
+      console.error("Failed to load user info:", err);
     }
   }
 
@@ -446,6 +452,8 @@ function renderSensor(sensor) {
       </div>
     `;
 
+    trackGrafanaIframeLoading(container);
+
     container
       .querySelectorAll(".all-timeseries-toggle")
       .forEach((toggleBtn) => {
@@ -475,5 +483,7 @@ function renderSensor(sensor) {
     }).join("");
 
     container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
+
+    trackGrafanaIframeLoading(container);
   }
 }

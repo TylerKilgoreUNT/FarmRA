@@ -79,6 +79,19 @@ body.login-page{
 
 .top-bar .top-bar-left h1{ margin: 0; font-size: 1.125rem; }
 
+.top-bar-left {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.user-greeting {
+	font-size: 0.95rem;
+	color: rgba(255, 255, 255, 0.85);
+	font-weight: 500;
+	letter-spacing: 0.3px;
+}
+
 .top-bar .top-bar-right{ display: flex; align-items: center; gap: .5rem; }
 
 /* User menu styles */
@@ -587,6 +600,74 @@ main{
 	flex: 1;
 }
 
+.login-card {
+	flex: 1;
+	background: rgba(255,255,255,0.08);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255,255,255,0.15);
+	padding: 40px 32px;
+	border-radius: 16px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+	text-align: center;
+}
+
+.card-content {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	width: 100%;
+	max-width: 360px;
+}
+
+.login-card h3 {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 0;
+	color: #fff;
+	text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.card-subtitle {
+	font-size: 15px;
+	color: rgba(255,255,255,0.8);
+	margin: 0;
+	line-height: 1.5;
+	text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.oauth-btn-primary {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 14px 20px;
+	border-radius: 10px;
+	background: #fff;
+	color: #111827;
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 15px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 16px rgba(255,255,255,0.2), 0 8px 24px rgba(0,0,0,0.25);
+	width: 100%;
+}
+
+.oauth-btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(255,255,255,0.3), 0 12px 32px rgba(0,0,0,0.35);
+	background: #f5f5f5;
+}
+
+.oauth-btn-primary:active {
+	transform: translateY(0);
+}
+
 .login .wrapper{
 	width: 100%;
 	background: rgba(255,255,255,0.06);
@@ -596,30 +677,7 @@ main{
 	box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.login h1{ text-align:center; margin:0 0 8px; font-size:28px; }
-
-.input-box{ margin:12px 0; }
-.input-box input{
-	width:100%;
-	padding:12px 14px;
-	border-radius:8px;
-	border:1px solid rgba(255,255,255,0.08);
-	background: rgba(255,255,255,0.02);
-	color: #fff;
-	font-size:15px;
-}
-.input-box input::placeholder{ color: rgba(255,255,255,0.6); }
-
-
-.remember-forgot{ display:flex; justify-content:space-between; align-items:center; font-size:14px; }
-.remember-forgot a{ color: rgba(255,255,255,0.85); text-decoration:underline; }
-
-.btn-login{ width:100%; padding:10px 12px; border-radius:8px; background: linear-gradient(135deg, #229A6C 0%, #22B07D 100%); color:#fff; border:0; font-weight:600; cursor:pointer; margin-top:8px; transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: 0 8px 20px rgba(34,154,108,0.35); }
-.btn-login:hover{ transform: translateY(-1px); filter: brightness(1.03); box-shadow: 0 10px 24px rgba(34,176,125,0.4); }
-
-.oauth-row{ display:flex; justify-content:center; margin:14px 0; }
-.oauth-btn{ display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:8px; text-decoration:none; color:#111; font-weight:600; gap:10px }
-.oauth-btn.google{ background: #fff; }
+/* OAuth icon styling */
 .oauth-icon{ width:20px; height:20px; display:inline-block; }
 
 
