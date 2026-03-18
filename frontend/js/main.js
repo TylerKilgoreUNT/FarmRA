@@ -1,5 +1,18 @@
 const GRAFANA_LOADER_TIMEOUT_MS = 20000;
 let grafanaLoaderTimeoutId = null;
+const NODE_STORAGE_KEY = "farmra_selected_node";
+const NODE_KEYS = new Set(["node1", "node2"]);
+const NODE_NUMBERS = {
+  node1: "1",
+  node2: "2",
+};
+let NODE_LABELS = {
+  node1: "Node 1",
+  node2: "Node 2",
+};
+const NODE_GRAFANA_LINK_CACHE = new Map();
+let activeNode = "node1";
+let nodesData = [];
 
 document.addEventListener("DOMContentLoaded", function () {
   //Added for displaying email
@@ -29,7 +42,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  async function loadNodes() {
+    try {
+      const res = await fetch("/api/nodes");
+      if (!res.ok) {
+        throw new Error(`Failed to fetch nodes: ${res.status}`);
+      }
+      nodesData = await res.json();
+
+      if (!Array.isArray(nodesData) || nodesData.length === 0) {
+        console.warn("No nodes loaded from API");
+        return;
+      }
+
+      nodesData.forEach((node, index) => {
+        const nodeKey = `node${index + 1}`;
+        if (NODE_KEYS.has(nodeKey)) {
+          NODE_LABELS[nodeKey] = node.node_name || `Node ${index + 1}`;
+          NODE_NUMBERS[nodeKey] = String(node.node_id);
+        }
+      });
+
+      updateNodeButtonLabels();
+    } catch (err) {
+      console.error("Failed to load nodes:", err);
+    }
+  }
+
+  function updateNodeButtonLabels() {
+    const nodeButtons = Array.from(
+      document.querySelectorAll("#left-panel .side-btn[data-node]"),
+    );
+
+    nodeButtons.forEach((btn, index) => {
+      const nodeKey = btn.dataset.node;
+      const label = NODE_LABELS[nodeKey] || `Node ${index + 1}`;
+      btn.textContent = label;
+    });
+  }
+
   loadUserInfo();
+  loadNodes();
   //End user email
 
   // User menu functionality
@@ -82,26 +135,43 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Active state for secondary panel buttons
-  const sideButtons = Array.from(document.querySelectorAll(".side-btn"));
+  activeNode = readStoredNode();
+
+  // Active state for sensor node buttons
+  const nodeButtons = Array.from(
+    document.querySelectorAll("#left-panel .side-btn[data-node]"),
+  );
   const sidebarSection = document.querySelector("#left-panel .sidebar-section");
   const isPortraitMobile = () =>
     globalThis.matchMedia("(orientation: portrait) and (max-width: 767px)")
       .matches;
 
-  const setActiveSideButton = (btn) => {
-    sideButtons.forEach((b) => b.classList.remove("active"));
+  const setActiveNodeButton = (btn, { rerender = true } = {}) => {
+    nodeButtons.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    const action = btn.dataset.action;
-    console.log("left-panel action:", action);
-  };
 
-  if (sideButtons.length > 0) {
-    if (!sideButtons.some((b) => b.classList.contains("active"))) {
-      setActiveSideButton(sideButtons[0]);
+    activeNode = normalizeNodeKey(btn.dataset.node);
+    persistActiveNode(activeNode);
+
+    if (!rerender) {
+      return;
     }
 
-    sideButtons.forEach((btn) => {
+    const activeIconAction =
+      document.querySelector("#left-narrow button.icon-btn.active")?.dataset
+        .action || "all";
+    renderSensor(activeIconAction);
+  };
+
+  if (nodeButtons.length > 0) {
+    const initialNodeButton =
+      nodeButtons.find(
+        (btn) => normalizeNodeKey(btn.dataset.node) === activeNode,
+      ) || nodeButtons[0];
+
+    setActiveNodeButton(initialNodeButton, { rerender: false });
+
+    nodeButtons.forEach((btn) => {
       btn.addEventListener("click", function () {
         if (isPortraitMobile() && sidebarSection) {
           const isActive = btn.classList.contains("active");
@@ -118,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
 
-        setActiveSideButton(btn);
+        setActiveNodeButton(btn);
         if (sidebarSection) sidebarSection.classList.remove("open");
       });
     });
@@ -240,6 +310,11 @@ const GRAFANA_LINKS = {
   },
 };
 
+// Add explicit Node 2 Grafana links here if they differ from the inferred URLs.
+const NODE_GRAFANA_LINK_OVERRIDES = {
+  node2: {},
+};
+
 function setOrAppendQueryParam(url, key, value) {
   if (!url) return "";
 
@@ -258,6 +333,131 @@ function setOrAppendQueryParam(url, key, value) {
   const serialized = params.toString();
   const withQuery = serialized ? `${path}?${serialized}` : path;
   return `${withQuery}${hash}`;
+}
+
+function normalizeNodeKey(nodeKey) {
+  return NODE_KEYS.has(nodeKey) ? nodeKey : "node1";
+}
+
+function readStoredNode() {
+  if (!globalThis.localStorage) {
+    return "node1";
+  }
+
+  try {
+    const stored = globalThis.localStorage.getItem(NODE_STORAGE_KEY);
+    return normalizeNodeKey(stored || "node1");
+  } catch (error) {
+    console.warn("Unable to read stored node:", error);
+    return "node1";
+  }
+}
+
+function persistActiveNode(nodeKey) {
+  if (!globalThis.localStorage) {
+    return;
+  }
+
+  try {
+    globalThis.localStorage.setItem(NODE_STORAGE_KEY, normalizeNodeKey(nodeKey));
+  } catch (error) {
+    console.warn("Unable to persist selected node:", error);
+  }
+}
+
+function getNodeNumber(nodeKey) {
+  return NODE_NUMBERS[normalizeNodeKey(nodeKey)] || "1";
+}
+
+function getNodeLabel(nodeKey) {
+  return NODE_LABELS[normalizeNodeKey(nodeKey)] || "Node 1";
+}
+
+function applyNodeContextToUrl(url, nodeKey) {
+  if (!url) {
+    return "";
+  }
+
+  const nodeNumber = getNodeNumber(nodeKey);
+  let nextUrl = url;
+
+  nextUrl = nextUrl.replaceAll(/(node[-_ ])([12])/gi, `$1${nodeNumber}`);
+  nextUrl = nextUrl.replaceAll(/(node%20)([12])/gi, `$1${nodeNumber}`);
+  nextUrl = setOrAppendQueryParam(nextUrl, "var-node", nodeNumber);
+  nextUrl = setOrAppendQueryParam(nextUrl, "var-node_id", nodeNumber);
+  nextUrl = setOrAppendQueryParam(nextUrl, "var-nodeid", nodeNumber);
+
+  return nextUrl;
+}
+
+function mapGrafanaUrls(value, mapper) {
+  if (typeof value === "string") {
+    return mapper(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => mapGrafanaUrls(entry, mapper));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).reduce((acc, [key, entry]) => {
+      acc[key] = mapGrafanaUrls(entry, mapper);
+      return acc;
+    }, {});
+  }
+
+  return value;
+}
+
+function mergeGrafanaLinks(base, override) {
+  if (!override || typeof override !== "object") {
+    return base;
+  }
+
+  const merged = Array.isArray(base) ? [...base] : { ...base };
+
+  Object.entries(override).forEach(([key, value]) => {
+    const baseValue = merged[key];
+
+    if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      baseValue &&
+      typeof baseValue === "object" &&
+      !Array.isArray(baseValue)
+    ) {
+      merged[key] = mergeGrafanaLinks(baseValue, value);
+      return;
+    }
+
+    merged[key] = value;
+  });
+
+  return merged;
+}
+
+function getGrafanaLinksForNode(nodeKey) {
+  const normalizedNode = normalizeNodeKey(nodeKey);
+
+  if (NODE_GRAFANA_LINK_CACHE.has(normalizedNode)) {
+    return NODE_GRAFANA_LINK_CACHE.get(normalizedNode);
+  }
+
+  const inferredLinks =
+    normalizedNode === "node1"
+      ? GRAFANA_LINKS
+      : mapGrafanaUrls(GRAFANA_LINKS, (url) =>
+          applyNodeContextToUrl(url, normalizedNode),
+        );
+
+  const mergedLinks = mergeGrafanaLinks(
+    inferredLinks,
+    NODE_GRAFANA_LINK_OVERRIDES[normalizedNode] || {},
+  );
+
+  NODE_GRAFANA_LINK_CACHE.set(normalizedNode, mergedLinks);
+  return mergedLinks;
 }
 
 function formatPanelLabel(panelType) {
@@ -280,6 +480,7 @@ function getAllPanelSrc({
   baseSrc,
   detectedAllUrls,
   detectedIndex,
+  nodeLinks,
 }) {
   const allPanelCollections = {
     gauge: "gauges",
@@ -288,14 +489,14 @@ function getAllPanelSrc({
 
   const explicitSrc =
     panelType === "table"
-      ? GRAFANA_LINKS.all.table
-      : GRAFANA_LINKS.all[allPanelCollections[panelType]]?.[sensor] || "";
+      ? nodeLinks.all.table
+      : nodeLinks.all[allPanelCollections[panelType]]?.[sensor] || "";
 
   const detectedSrc = detectedAllUrls[detectedIndex] || "";
   const fallbackSensor = panelType === "table" ? "all" : sensor;
   const derivedSrc = getAllPanelFallbackSrc(baseSrc, panelType, fallbackSensor);
 
-  return explicitSrc || detectedSrc || derivedSrc;
+  return applyNodeContextToUrl(explicitSrc || detectedSrc || derivedSrc, activeNode);
 }
 
 function showGrafanaLoader(message = "Loading dashboards...") {
@@ -346,7 +547,9 @@ function trackGrafanaIframeLoading(container) {
   let remaining = total;
   let settled = false;
 
-  showGrafanaLoader(`Loading ${total} dashboard${total === 1 ? "" : "s"}...`);
+  showGrafanaLoader(
+    `Loading ${total} dashboard${total === 1 ? "" : "s"} for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
+  );
 
   const handleLoaded = () => {
     remaining -= 1;
@@ -385,10 +588,12 @@ function renderSensor(sensor) {
     return;
   }
 
+  const nodeLinks = getGrafanaLinksForNode(activeNode);
+
   const detectedAllUrls = Array.from(
     container.querySelectorAll(".grafanaContainer iframe"),
   )
-    .map((iframe) => iframe.src)
+    .map((iframe) => applyNodeContextToUrl(iframe.src, activeNode))
     .filter(Boolean);
 
   const fallbackAllUrls = detectedAllUrls;
@@ -404,6 +609,7 @@ function renderSensor(sensor) {
         baseSrc,
         detectedAllUrls,
         detectedIndex: index,
+        nodeLinks,
       });
       const label = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Gauge`;
 
@@ -422,6 +628,7 @@ function renderSensor(sensor) {
       baseSrc,
       detectedAllUrls,
       detectedIndex: timeseriesIndex,
+      nodeLinks,
     });
 
     const tableSrc = getAllPanelSrc({
@@ -430,6 +637,7 @@ function renderSensor(sensor) {
       baseSrc,
       detectedAllUrls,
       detectedIndex: 6,
+      nodeLinks,
     });
 
     const timeseriesToggles = SENSOR_TYPES.map((sensorType) => {
@@ -468,8 +676,11 @@ function renderSensor(sensor) {
         });
       });
   } else {
-    const metricConfig = GRAFANA_LINKS.metrics[sensor] || {};
-    const metricBase = setOrAppendQueryParam(baseSrc, "var-sensor", sensor);
+    const metricConfig = nodeLinks.metrics[sensor] || {};
+    const metricBase = applyNodeContextToUrl(
+      setOrAppendQueryParam(baseSrc, "var-sensor", sensor),
+      activeNode,
+    );
 
     const metricBoxes = METRIC_PANEL_TYPES.map((panelType) => {
       const fallback = setOrAppendQueryParam(
@@ -477,7 +688,10 @@ function renderSensor(sensor) {
         "var-panel",
         panelType,
       );
-      const src = metricConfig[panelType] || fallback;
+      const src = applyNodeContextToUrl(
+        metricConfig[panelType] || fallback,
+        activeNode,
+      );
       const panelLabel = formatPanelLabel(panelType);
 
       return `

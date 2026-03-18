@@ -136,8 +136,7 @@ body #map {
 }
 
 .leaflet-marker-icon[src*="markerBlue.png"],
-.leaflet-marker-icon[src*="markerGreen.png"],
-.leaflet-marker-icon[src*="markerRed.png"] {
+.leaflet-marker-icon[src*="markerGreen.png"] {
   width: clamp(42px, 9vw, 72px) !important;
   height: clamp(56px, 12vw, 96px) !important;
 }

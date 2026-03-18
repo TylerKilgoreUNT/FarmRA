@@ -706,8 +706,7 @@ main{
 }
 
 .leaflet-marker-icon[src*="markerBlue.png"],
-.leaflet-marker-icon[src*="markerGreen.png"],
-.leaflet-marker-icon[src*="markerRed.png"]{
+.leaflet-marker-icon[src*="markerGreen.png"]{
 	width: 72px !important;
 	height: 96px !important;
 }
