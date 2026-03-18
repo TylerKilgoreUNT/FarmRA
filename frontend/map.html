@@ -28,9 +28,8 @@
             <h3>Sensor Nodes</h3>
         </div>
         <div class="sidebar-section">
-            <button class="side-btn" data-action="light">Node 1</button>
-            <button class="side-btn" data-action="export">Node 2</button>
-            <button class="side-btn" data-action="settings">Node 3</button>
+             <button class="side-btn active" data-node="node1" type="button">Loading nodes...</button>
+             <button class="side-btn" data-node="node2" type="button">Loading nodes...</button>
         </div>
     </nav>
     <nav id="left-narrow" class="sidebar left-narrow" aria-label="Primary navigation">
@@ -70,17 +69,9 @@
                 popupAnchor: [0, -96]
             });
             
-            var redIcon = L.icon({
-                iconUrl: '/assets/markerRed.png',
-                iconSize: [72, 96],
-                iconAnchor: [36, 96],
-                popupAnchor: [0, -96]
-            });
-            
             // Add markers with custom icons
             L.marker([33.254, -97.152], {icon: blueIcon}).addTo(map).bindPopup('<b>Node 1</b><br>Sensor Node 1');
             L.marker([33.255, -97.153], {icon: greenIcon}).addTo(map).bindPopup('<b>Node 2</b><br>Sensor Node 2');
-            L.marker([33.253, -97.151], {icon: redIcon}).addTo(map).bindPopup('<b>Node 3</b><br>Sensor Node 3');
          </script>
     </main>
     <div id="overlay" class="overlay" hidden></div>

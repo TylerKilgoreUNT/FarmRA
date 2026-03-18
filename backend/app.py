@@ -272,6 +272,28 @@ def delete_user(u_id):
 # Gateways + Nodes (Read-only)
 # -------------------------------------------------
 
+@app.route("/api/nodes", methods=["GET"])
+@require_login
+def get_user_nodes():
+    """Get all nodes (devices) for the current user."""
+    conn = db_access()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT d_nodeId, d_nodeName
+        FROM node_data.devices
+        WHERE d_userId = (
+            SELECT u_userId FROM user_data.users WHERE u_email = %s
+        )
+        ORDER BY d_nodeId
+    """, (session.get("email"),))
+    rows = cur.fetchall()
+    conn.close()
+
+    return jsonify([
+        {"node_id": r[0], "node_name": r[1]}
+        for r in rows
+    ])
+
 @app.route("/api/users/<int:u_id>/gateways", methods=["GET"])
 @require_login
 def get_user_gateways(u_id):
