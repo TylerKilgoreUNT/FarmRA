@@ -52,7 +52,7 @@ def lambda_handler(event, context):
             #battery = sensor_data['data']['battery']
 
             # Finds the node ID from the nodes table that matches the gateway id and node name from sensors
-            cursor.execute("SELECT n_id FROM testing_grounds.nodes WHERE g_id_fk = %s AND n_name = %s", (gateway_id, node_name))
+            cursor.execute("SELECT d_nodeId FROM testing_grounds.devices WHERE d_gatewayId = %s AND d_nodeName = %s", (gateway_id, node_name))
             result = cursor.fetchone()
             if result:
                 node_id = result[0]
@@ -60,7 +60,7 @@ def lambda_handler(event, context):
                 raise ValueError(f"No node found for gateway_id={gateway_id} and node_name='{node_name}'")
 
             # Define sql query parameters 
-            sql_insert = "INSERT INTO testing_grounds.live_measurements (m_time, n_id_fk, m_temperature, m_moist, m_light) VALUES (%s, %s, %s, %s, %s)"
+            sql_insert = "INSERT INTO testing_grounds.live_measurements (m_time, m_nodeID, m_temperature, m_moist, m_light) VALUES (%s, %s, %s, %s, %s)"
             sql_data = (timestampz, node_id, temperature, moisture, light)
 
             # Insert into PostgreSQL

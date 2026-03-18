@@ -6,8 +6,7 @@ DO $TCS$
 BEGIN
 
     DROP TABLE IF EXISTS node_data.measurements;
-    DROP TABLE IF EXISTS node_data.nodes;
-    DROP TABLE IF EXISTS node_data.gateways;
+    DROP TABLE IF EXISTS node_data.devices;
     DROP TABLE IF EXISTS user_data.users;
 
     --SCHEMA: user_data
@@ -37,12 +36,11 @@ BEGIN
         d_gpsLat FLOAT,        
         
 
-        CONSTRAINT devices_pk PRIMARY KEY(d_nodeId)
-        CONSTRAINT unique_name_gid UNIQUE (d_gatewayId, d_nodeName)
+        CONSTRAINT devices_pk PRIMARY KEY(d_nodeId),
+        CONSTRAINT unique_name_gid UNIQUE (d_gatewayId, d_nodeName),
         CONSTRAINT users_fk FOREIGN KEY(d_userId) 
                         REFERENCES user_data.users(u_userId)
     );
-
 
     CREATE TABLE measurements
     (
@@ -56,40 +54,29 @@ BEGIN
         CONSTRAINT measurements_fk FOREIGN KEY(m_nodeId) 
                         REFERENCES node_data.devices(d_nodeId)
     );
-
-    SELECT create_hypertable('test_measurements', 'm_time');
-
 END $TCS$;
+
+--Create hypertable and index
+SELECT create_hypertable('measurements', 'm_time');
+CREATE INDEX ON node_data.measurements (n_id_fk, m_time DESC);
 
 --Add users and privileges
 GRANT CONNECT ON DATABASE farmra TO user_lambda;
 GRANT USAGE ON SCHEMA node_data TO user_lambda;
 GRANT INSERT ON TABLE node_data.measurements TO user_lambda;
-
-GRANT USAGE ON SCHEMA testing_grounds TO user_lambda;
-GRANT INSERT ON TABLE testing_grounds.test_measurements TO user_lambda;
-GRANT SELECT ON TABLE testing_grounds.nodes TO user_lambda;
+GRANT SELECT ON TABLE node_data.devices TO user_lambda;
 
 GRANT CONNECT ON DATABASE farmra TO user_grafana;
 GRANT USAGE ON SCHEMA node_data TO user_grafana;
 GRANT SELECT ON TABLE node_data.measurements TO user_grafana;
 
-GRANT USAGE ON SCHEMA testing_grounds TO user_grafana;
-GRANT SELECT ON TABLE testing_grounds.test_measurements TO user_grafana;
-
 --Initialization data
 INSERT INTO user_data.users
-(u_f_name, u_l_name, u_email, u_role)
+(u_fName, u_lName, u_email, u_isAdmin, u_userId)
 VALUES
-('farm', 'ra', 'untfarmra@gmail.com', 'admin');
+('farm', 'ra', 'untfarmra@gmail.com', TRUE, 1);
 
-INSERT INTO node_data.gateways
-(g_id) 
-VALUES 
-('657d6f412cfcaf87');
-
-INSERT INTO node_data.nodes
-(n_name, g_id_fk, n_id)
+INSERT INTO node_data.devices
+(d_nodeId, d_gatewayId, d_nodeName, d_userId )
 VALUES
-('node 1', '657d6f412cfcaf87', 1), ('node 2', '657d6f412cfcaf87', 2);
-        
+(1, '657d6f412cfcaf87', 'node_1', 1), (2, '657d6f412cfcaf87', 'node_2', 1);
