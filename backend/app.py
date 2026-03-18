@@ -116,18 +116,18 @@ def load_user():
     #session["role"] = role
 
 # Basic user info
-@app.route("/api/me", methods=["GET"])
+@app.route("/farmra-api/me", methods=["GET"])
 @require_login
 def me():
     return jsonify({
         "email": session.get("email"),
-        "u_id": session.get("u_id"),
+        #"u_id": session.get("u_id"),
         "name": session.get("name"),
-        "role": session.get("role"),
+        #"role": session.get("role"),
     })
 
 # Post-OIDC Routing Endpoint
-#@app.route("/api/route_user")
+#@app.route("/farmra-api/route_user")
 #def route_user():
 #    email = request.headers.get("X-User-Email")
 #    name = request.headers.get("X-User-Name")
@@ -158,7 +158,7 @@ def me():
 # -------------------------------------------------
 
 # CREATE user
-@app.route("/api/users", methods=["POST"])
+@app.route("/farmra-api/users", methods=["POST"])
 @require_admin("admin")
 def create_user():
     data = request.get_json() or {}
@@ -177,7 +177,7 @@ def create_user():
     return jsonify({"message": "User created", "u_id": u_id}), 201
 
 # READ all users
-@app.route("/api/users", methods=["GET"])
+@app.route("/farmra-api/users", methods=["GET"])
 @require_admin("admin")
 def list_users():
     conn = db_access()
@@ -202,7 +202,7 @@ def list_users():
     ])
 
 # READ single user
-@app.route("/api/users/<int:u_id>", methods=["GET"])
+@app.route("/farmra-api/users/<int:u_id>", methods=["GET"])
 @require_admin("admin")
 def get_user(u_id):
     conn = db_access()
@@ -227,7 +227,7 @@ def get_user(u_id):
     })
 
 # UPDATE user
-@app.route("/api/users/<int:u_id>", methods=["PUT"])
+@app.route("/farmra-api/users/<int:u_id>", methods=["PUT"])
 @require_admin("admin")
 def update_user(u_id):
     data = request.get_json() or {}
@@ -254,7 +254,7 @@ def update_user(u_id):
     return jsonify({"message": "User updated"})
 
 # DELETE user
-@app.route("/api/users/<int:u_id>", methods=["DELETE"])
+@app.route("/farmra-api/users/<int:u_id>", methods=["DELETE"])
 @require_admin("admin")
 def delete_user(u_id):
     conn = db_access()
@@ -272,7 +272,7 @@ def delete_user(u_id):
 # Gateways + Nodes (Read-only)
 # -------------------------------------------------
 
-@app.route("/api/users/<int:u_id>/gateways", methods=["GET"])
+@app.route("/farmra-api/users/<int:u_id>/gateways", methods=["GET"])
 @require_login
 def get_user_gateways(u_id):
     conn = db_access()
@@ -287,7 +287,7 @@ def get_user_gateways(u_id):
 
     return jsonify([r[0] for r in rows])
 
-@app.route("/api/gateways/<g_id>/nodes", methods=["GET"])
+@app.route("/farmra-api/gateways/<g_id>/nodes", methods=["GET"])
 @require_login
 def get_gateway_nodes(g_id):
     conn = db_access()
@@ -309,7 +309,7 @@ def get_gateway_nodes(g_id):
 # Measurements (Read-only, TimescaleDB optimized)
 # -------------------------------------------------
 
-@app.route("/api/measurements/node/<int:n_id>", methods=["GET"])
+@app.route("/farmra-api/measurements/node/<int:n_id>", methods=["GET"])
 @require_login
 def get_node_measurements(n_id):
     limit = request.args.get("limit", 50)
@@ -338,7 +338,7 @@ def get_node_measurements(n_id):
         for r in rows
     ])
 
-@app.route("/api/measurements/gateway/<g_id>", methods=["GET"])
+@app.route("/farmra-api/measurements/gateway/<g_id>", methods=["GET"])
 @require_login
 def get_gateway_measurements(g_id):
     limit = request.args.get("limit", 100)
@@ -372,7 +372,7 @@ def get_gateway_measurements(g_id):
     ])
 
 # Admin API Example
-#@app.route("/api/admin/users", methods=["GET"])
+#@app.route("/farmra-api/admin/users", methods=["GET"])
 #@require_admin
 #def list_users():
 #    conn = db_access()

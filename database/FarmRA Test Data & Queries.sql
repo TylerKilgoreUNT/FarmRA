@@ -82,6 +82,9 @@ GRANT SELECT ON TABLE testing_grounds.devices TO user_lambda;
 GRANT USAGE ON SCHEMA testing_grounds TO user_grafana;
 GRANT SELECT ON TABLE testing_grounds.test_measurements TO user_grafana;
 GRANT SELECT ON TABLE testing_grounds.live_measurements TO user_grafana;
+GRANT SELECT ON TABLE testing_grounds.users TO user_grafana;
+GRANT SELECT ON TABLE testing_grounds.devices TO user_grafana;
+
 
 --Initialization data
 INSERT INTO testing_grounds.users
