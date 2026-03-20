@@ -116,7 +116,7 @@ def load_user():
     #session["role"] = role
 
 # Basic user info
-@app.route("/farmra-api/me", methods=["GET"])
+@app.route("/me", methods=["GET"])
 @require_login
 def me():
     return jsonify({

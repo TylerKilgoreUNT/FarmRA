@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await fetch("/farmra-api/me");
       const data = await res.json();
 
-      window.currentUserEmail = data.email;
+      //window.currentUserEmail = data.email;
 
       //const tableWithEmail = setOrAppendQueryParam(tableSrc, "var-email", window.currentUserEmail);
       //<iframe src="${tableWithEmail}" width="100%" height="400px" frameborder="0" title="All Sensors Table"></iframe>
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadNodes() {
     try {
-      const res = await fetch("/api/nodes");
+      const res = await fetch("/farmra-api/nodes");
       if (!res.ok) {
         throw new Error(`Failed to fetch nodes: ${res.status}`);
       }
@@ -359,7 +359,10 @@ function persistActiveNode(nodeKey) {
   }
 
   try {
-    globalThis.localStorage.setItem(NODE_STORAGE_KEY, normalizeNodeKey(nodeKey));
+    globalThis.localStorage.setItem(
+      NODE_STORAGE_KEY,
+      normalizeNodeKey(nodeKey),
+    );
   } catch (error) {
     console.warn("Unable to persist selected node:", error);
   }
@@ -496,7 +499,10 @@ function getAllPanelSrc({
   const fallbackSensor = panelType === "table" ? "all" : sensor;
   const derivedSrc = getAllPanelFallbackSrc(baseSrc, panelType, fallbackSensor);
 
-  return applyNodeContextToUrl(explicitSrc || detectedSrc || derivedSrc, activeNode);
+  return applyNodeContextToUrl(
+    explicitSrc || detectedSrc || derivedSrc,
+    activeNode,
+  );
 }
 
 function showGrafanaLoader(message = "Loading dashboards...") {
