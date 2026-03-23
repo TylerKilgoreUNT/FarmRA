@@ -10,7 +10,7 @@ app.secret_key = "71b2ccf76d017e8637de631de8d5127f1e026c00e7ddb445b81f27c6c54089
 
 load_dotenv()
 
-B_HOST = os.getenv("DB_HOST")
+DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -19,9 +19,9 @@ DB_PORT = int(os.getenv("DB_PORT"))
 # Database Connection
 def db_access():
     return psycopg2.connect(
-        dbname=DB_NAME
+        dbname=DB_NAME,
         user=DB_USER,
-        password=DB_PASSWORD",
+        password=DB_PASSWORD,
         host=DB_HOST,
         port=DB_PORT
     )
