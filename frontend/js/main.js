@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await fetch("/farmra-api/me");
       const data = await res.json();
 
-      //window.currentUserEmail = data.email;
+      window.currentUserEmail = data.email;
 
       //const tableWithEmail = setOrAppendQueryParam(tableSrc, "var-email", window.currentUserEmail);
       //<iframe src="${tableWithEmail}" width="100%" height="400px" frameborder="0" title="All Sensors Table"></iframe>
