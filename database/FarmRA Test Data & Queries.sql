@@ -85,17 +85,25 @@ GRANT SELECT ON TABLE testing_grounds.live_measurements TO user_grafana;
 GRANT SELECT ON TABLE testing_grounds.users TO user_grafana;
 GRANT SELECT ON TABLE testing_grounds.devices TO user_grafana;
 
+GRANT CONNECT ON DATABASE farmra TO user_flask;
+GRANT USAGE ON SCHEMA testing_grounds TO user_flask;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE testing_grounds.users TO user_flask;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE testing_grounds.devices TO user_flask;
+GRANT SELECT ON TABLE testing_grounds.live_measurements TO user_flask;
+GRANT SELECT ON TABLE testing_grounds.test_measurements TO user_flask;
+
 
 --Initialization data
 INSERT INTO testing_grounds.users
 (u_fName, u_lName, u_email, u_isAdmin, u_userId)
 VALUES
-('farm', 'ra', 'untfarmra@gmail.com', TRUE, 1);
+('farm', 'ra', 'untfarmra@gmail.com', TRUE, 1), 
+('farmra', 'user', 'farmrauser@gmail.com', FALSE, 2);
 
 INSERT INTO testing_grounds.devices
 (d_nodeId, d_gatewayId, d_nodeName, d_userId )
 VALUES
-(1, '657d6f412cfcaf87', 'node_1', 1), (2, '657d6f412cfcaf87', 'node_2', 1);
+(1, '657d6f412cfcaf87', 'node_1', 2), (2, '657d6f412cfcaf87', 'node_2', 2);
 
 ---------------------------------------------------------------------------------------------------------
 

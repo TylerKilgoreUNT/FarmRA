@@ -72,11 +72,20 @@ GRANT SELECT ON TABLE user_data.users TO user_grafana;
 GRANT SELECT ON TABLE node_data.devices TO user_grafana;
 GRANT SELECT ON TABLE node_data.measurements TO user_grafana;
 
+GRANT CONNECT ON DATABASE farmra TO user_flask;
+GRANT USAGE ON SCHEMA node_data TO user_flask;
+GRANT USAGE ON SCHEMA user_data TO user_flask;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE user_data.users TO user_flask;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE node_data.devices TO user_flask;
+GRANT SELECT ON TABLE node_data.measurements TO user_flask;
+
+
 --Initialization data
 INSERT INTO user_data.users
 (u_fName, u_lName, u_email, u_isAdmin, u_userId)
 VALUES
-('farm', 'ra', 'untfarmra@gmail.com', TRUE, 1);
+('farm', 'ra', 'untfarmra@gmail.com', TRUE, 1),
+('farmra', 'user', 'farmrauser@gmail.com', FALSE, 2);
 
 INSERT INTO node_data.devices
 (d_nodeId, d_gatewayId, d_nodeName, d_userId )
