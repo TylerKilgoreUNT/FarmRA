@@ -106,7 +106,7 @@ def load_user():
     is_admin = get_user_role(user_email)
     if is_admin is None:
         session.clear()
-        return redirect("/login.html?error=not_registered")
+        return redirect("/oidc/callback?logout=https://farmra.net/login.html?error=not_registered")
 
     session["is_admin"] = is_admin
 
