@@ -56,3 +56,15 @@ ORDER BY m.m_time DESC;
 
 --Testing variable passing:
 <iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
+
+/*async function injectGrafanaVariables() {
+  const res = await fetch("/farmra-api/me");
+  const me = await res.json();
+
+  const email = encodeURIComponent(me.email);
+
+  document.querySelectorAll("iframe[data-grafana]").forEach((frame) => {
+    const base = frame.dataset.src; // original URL stored in data-src
+    frame.src = `${base}?var-email=${email}`;
+  });
+  }*/

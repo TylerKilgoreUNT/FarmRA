@@ -381,7 +381,7 @@ async function createDeviceApi({
     body: JSON.stringify({
       node_name: nodeName,
       gateway_id: gatewayId,
-      user_email: userEmail, // <-- IMPORTANT
+      user_email: userEmail,
       gps_long: gpsLong || null,
       gps_lat: gpsLat || null,
     }),

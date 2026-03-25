@@ -16,4 +16,8 @@ sudo cp -r ~/FarmRA/backend/* ~/FarmRA-Backend/
 # Copies deployment script to home directory" 
 cp ~/FarmRA/deploy/deploy.sh ~/deploy.sh
 
+# Restart apache and gunicorn
+sudo systemctl restart apache2
+sudo systemctl restart farmra
+
 echo "Repository deployed"
