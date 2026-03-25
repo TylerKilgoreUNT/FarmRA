@@ -212,7 +212,16 @@ async function requestJson(url, options = {}) {
   const parsed = rawText ? safeJsonParse(rawText) : null;
 
   if (!response.ok) {
+    const missingFieldsMessage =
+      parsed &&
+      typeof parsed === "object" &&
+      Array.isArray(parsed.missing) &&
+      parsed.missing.length > 0
+        ? `${parsed.error || "Missing required fields"}: ${parsed.missing.join(", ")}`
+        : null;
+
     const message =
+      missingFieldsMessage ||
       (parsed &&
         typeof parsed === "object" &&
         (parsed.message || parsed.error)) ||

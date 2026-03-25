@@ -259,16 +259,29 @@ def delete_user(user_id):
 @app.route("/devices", methods=["POST"])
 @require_admin
 def create_device():
-    data = request.get_json() or {}
+    payload = {}
+    json_data = request.get_json(silent=True)
+    if isinstance(json_data, dict):
+        payload.update(json_data)
+    if request.form:
+        payload.update(request.form.to_dict(flat=True))
 
-    gateway_id = str(data.get("gateway_id") or data.get("gatewayId") or "").strip()
-    user_email = str(data.get("user_email") or data.get("userEmail") or "").strip()
-    node_name = str(data.get("node_name") or data.get("nodeName") or "").strip()
-    gps_long = data.get("gps_long", data.get("gpsLong"))
-    gps_lat = data.get("gps_lat", data.get("gpsLat"))
+    gateway_id = str(payload.get("gateway_id") or payload.get("gatewayId") or "").strip()
+    user_email = str(payload.get("user_email") or payload.get("userEmail") or "").strip()
+    node_name = str(payload.get("node_name") or payload.get("nodeName") or "").strip()
+    gps_long = payload.get("gps_long", payload.get("gpsLong"))
+    gps_lat = payload.get("gps_lat", payload.get("gpsLat"))
 
-    if not (gateway_id and user_email and node_name):
-        return jsonify({"error": "Missing required fields"}), 400
+    missing = []
+    if not gateway_id:
+        missing.append("gateway_id")
+    if not user_email:
+        missing.append("user_email")
+    if not node_name:
+        missing.append("node_name")
+
+    if missing:
+        return jsonify({"error": "Missing required fields", "missing": missing}), 400
 
     user_row = get_user_by_email(user_email)
     if not user_row:
