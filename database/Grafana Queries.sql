@@ -16,12 +16,12 @@ SELECT
 FROM
   testing_grounds.test_measurements
 WHERE
-  n_id_fk = 1
+  m_nodeId = 1
 ORDER BY
   m_time DESC;
 
 --Query variable for node
-SELECT d.d_nodeId
+SELECT d.d_nodeId AS __value, d.d_nodeName AS __text
 FROM testing_grounds.devices d
 WHERE d.d_userId = (
     SELECT u.u_userId
@@ -53,3 +53,6 @@ AND m.m_nodeId IN (
     )
 )
 ORDER BY m.m_time DESC;
+
+--Testing variable passing:
+<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>

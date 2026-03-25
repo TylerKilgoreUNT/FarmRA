@@ -69,6 +69,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  /*async function injectGrafanaVariables() {
+  const res = await fetch("/farmra-api/me");
+  const me = await res.json();
+
+  const email = encodeURIComponent(me.email);
+
+  document.querySelectorAll("iframe[data-grafana]").forEach((frame) => {
+    const base = frame.dataset.src; // original URL stored in data-src
+    frame.src = `${base}?var-email=${email}`;
+  });
+  }*/
+
   function updateNodeButtonLabels() {
     const nodeButtons = Array.from(
       document.querySelectorAll("#left-panel .side-btn[data-node]"),
