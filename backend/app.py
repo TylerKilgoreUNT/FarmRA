@@ -154,10 +154,10 @@ def logout():
 def create_user():
     data = request.get_json() or {}
 
-    first = data.get("first_name")
-    last = data.get("last_name")
-    email = data.get("email")
-    is_admin = data.get("is_admin", False)
+    first = str(data.get("first_name") or data.get("firstName") or "").strip()
+    last = str(data.get("last_name") or data.get("lastName") or "").strip()
+    email = str(data.get("email") or "").strip()
+    is_admin = bool(data.get("is_admin", data.get("isAdmin", False)))
 
     if not (first and last and email):
         return jsonify({"error": "Missing required fields"}), 400
@@ -165,8 +165,12 @@ def create_user():
     if get_user_by_email(email):
         return jsonify({"error": "User already exists"}), 400
 
-    new_id = insert_user(first, last, email, is_admin)
-    return jsonify({"message": "User created", "user_id": new_id}), 201
+    try:
+        new_id = insert_user(first, last, email, is_admin)
+        return jsonify({"message": "User created", "user_id": new_id}), 201
+    except psycopg2.Error as error:
+        app.logger.exception("Failed to create user")
+        return jsonify({"error": f"Unable to create user: {error.pgerror or error}"}), 500
 
 @app.route("/users", methods=["GET"])
 @require_admin
@@ -257,11 +261,11 @@ def delete_user(user_id):
 def create_device():
     data = request.get_json() or {}
 
-    gateway_id = data.get("gateway_id")
-    user_email = data.get("user_email")
-    node_name = data.get("node_name")
-    gps_long = data.get("gps_long")
-    gps_lat = data.get("gps_lat")
+    gateway_id = str(data.get("gateway_id") or data.get("gatewayId") or "").strip()
+    user_email = str(data.get("user_email") or data.get("userEmail") or "").strip()
+    node_name = str(data.get("node_name") or data.get("nodeName") or "").strip()
+    gps_long = data.get("gps_long", data.get("gpsLong"))
+    gps_lat = data.get("gps_lat", data.get("gpsLat"))
 
     if not (gateway_id and user_email and node_name):
         return jsonify({"error": "Missing required fields"}), 400
@@ -271,28 +275,39 @@ def create_device():
         return jsonify({"error": "Assigned user does not exist"}), 400
     user_id = user_row[0]
     
-    conn = db_access()
-    cur = conn.cursor()
+    conn = None
+    cur = None
 
-    cur.execute("""
-        SELECT 1 FROM testing_grounds.devices
-        WHERE d_gatewayId = %s AND d_nodeName = %s
-    """, (gateway_id, node_name))
-    if cur.fetchone():
-        conn.close()
-        return jsonify({"error": "Device name already exists for this gateway"}), 400
+    try:
+        conn = db_access()
+        cur = conn.cursor()
 
-    cur.execute("""
-        INSERT INTO testing_grounds.devices (d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING d_nodeId
-    """, (gateway_id, user_id, node_name, gps_long, gps_lat))
+        cur.execute("""
+            SELECT 1 FROM testing_grounds.devices
+            WHERE d_gatewayId = %s AND d_nodeName = %s
+        """, (gateway_id, node_name))
+        if cur.fetchone():
+            return jsonify({"error": "Device name already exists for this gateway"}), 400
 
-    new_id = cur.fetchone()[0]
-    conn.commit()
-    conn.close()
+        cur.execute("""
+            INSERT INTO testing_grounds.devices (d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING d_nodeId
+        """, (gateway_id, user_id, node_name, gps_long, gps_lat))
 
-    return jsonify({"message": "Device created", "node_id": new_id}), 201
+        new_id = cur.fetchone()[0]
+        conn.commit()
+        return jsonify({"message": "Device created", "node_id": new_id}), 201
+    except psycopg2.Error as error:
+        if conn:
+            conn.rollback()
+        app.logger.exception("Failed to create device")
+        return jsonify({"error": f"Unable to create device: {error.pgerror or error}"}), 500
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 @app.route("/devices", methods=["GET"])
 @require_admin

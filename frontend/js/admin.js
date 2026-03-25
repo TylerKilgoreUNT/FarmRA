@@ -93,9 +93,18 @@ function bindAdminForm() {
         return;
       }
 
+      if (!form.reportValidity()) {
+        return;
+      }
+
       const firstName = getInputValue("firstName");
       const lastName = getInputValue("lastName");
       const email = getInputValue("googleEmail");
+
+      if (!firstName || !lastName || !email) {
+        showStatus("First name, last name, and email are required.", "error");
+        return;
+      }
 
       try {
         await createUserApi({ firstName, lastName, email });
@@ -135,11 +144,25 @@ function bindAdminForm() {
 async function handleCreateDevice(event) {
   event.preventDefault();
 
+  const form = event.currentTarget;
+  if (!(form instanceof HTMLFormElement)) {
+    return;
+  }
+
+  if (!form.reportValidity()) {
+    return;
+  }
+
   const nodeName = getInputValue("nodeName");
   const gatewayId = getInputValue("gatewayId");
   const userEmail = getInputValue("userEmail");
   const gpsLong = getInputValue("gpsLong");
   const gpsLat = getInputValue("gpsLat");
+
+  if (!nodeName || !gatewayId || !userEmail) {
+    showStatus("Node name, gateway ID, and user email are required.", "error");
+    return;
+  }
 
   try {
     await createDeviceApi({
@@ -151,7 +174,7 @@ async function handleCreateDevice(event) {
     });
 
     showStatus("Device created successfully.", "success");
-    event.target.reset();
+    form.reset();
   } catch (err) {
     showStatus(err.message, "error");
   }
@@ -209,6 +232,9 @@ async function createUserApi({ firstName, lastName, email }) {
       last_name: lastName,
       email,
       is_admin: false,
+      firstName,
+      lastName,
+      isAdmin: false,
     }),
   });
 }
@@ -229,6 +255,11 @@ async function createDeviceApi({
       user_email: userEmail,
       gps_long: gpsLong || null,
       gps_lat: gpsLat || null,
+      nodeName,
+      gatewayId,
+      userEmail,
+      gpsLong: gpsLong || null,
+      gpsLat: gpsLat || null,
     }),
   });
 }
