@@ -286,7 +286,8 @@ const GRAFANA_LINKS = {
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
     },
-    table: "",
+    table: 
+      "https://farmra.net:3000/d-solo/advlmcb/all-data?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
   },
   metrics: {
     light: {
