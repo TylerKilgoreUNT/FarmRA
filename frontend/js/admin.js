@@ -1,17 +1,8 @@
 const ADMIN_API_BASE = getAdminApiBase();
 const LOCAL_USERS_KEY = "farmra_admin_users";
-const LOCAL_GATEWAYS_KEY = "farmra_admin_gateways";
-const DEFAULT_GATEWAYS = [
-  { id: "1001", label: "Gateway 1001" },
-  { id: "1002", label: "Gateway 1002" },
-  { id: "1003", label: "Gateway 1003" },
-];
 
 const state = {
   users: [],
-  gateways: [],
-  remoteUsersLoaded: false,
-  remoteGatewaysLoaded: false,
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -21,27 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateAdminEmail();
   await initializeData();
 });
-
-async function loadUserInfo() {
-  try {
-    const res = await fetch("/farmra-api/me");
-    const data = await res.json();
-
-    //Admin Email
-    const emailSpan = document.getElementById("userEmail");
-    if (emailSpan && data.email) {
-      emailSpan.textContent = data.email;
-    }
-
-    //Admin Name - Display greeting
-    const greetingSpan = document.getElementById("userGreeting");
-    if (greetingSpan && data.name) {
-      greetingSpan.textContent = `Hi, ${data.name}!`;
-    }
-  } catch (err) {
-    console.error("Failed to load user info:", err);
-  }
-}
 
 function getAdminApiBase() {
   const apiMeta = document.querySelector('meta[name="farmra-admin-api-base"]');
@@ -192,33 +162,10 @@ async function loadUsers() {
     const payload = await requestJson(`${ADMIN_API_BASE}/users`);
     state.users = normalizeUserCollection(payload);
     writeLocalUsers(state.users);
-    state.remoteUsersLoaded = true;
     return true;
   } catch (error) {
     reportRecoverableError(error, "load users");
-    state.remoteUsersLoaded = false;
     state.users = readLocalUsers();
-    return false;
-  }
-}
-
-async function loadGateways() {
-  try {
-    const payload = await requestJson(`${ADMIN_API_BASE}/gateways`);
-    const gateways = normalizeGatewayCollection(payload);
-
-    if (gateways.length === 0) {
-      throw new Error("No gateways in response");
-    }
-
-    state.gateways = gateways;
-    writeLocalGateways(gateways);
-    state.remoteGatewaysLoaded = true;
-    return true;
-  } catch (error) {
-    reportRecoverableError(error, "load gateways");
-    state.remoteGatewaysLoaded = false;
-    state.gateways = readLocalGateways();
     return false;
   }
 }
@@ -352,125 +299,12 @@ function normalizeUser(entry) {
       "",
   ).trim();
 
-  const rawGateways =
-    entry.gateways ||
-    entry.gatewayIds ||
-    entry.gateway_ids ||
-    entry.nodes ||
-    [];
-  const gateways = Array.isArray(rawGateways)
-    ? rawGateways
-        .map((gateway) => {
-          if (typeof gateway === "string" || typeof gateway === "number") {
-            return String(gateway);
-          }
-
-          return String(
-            gateway?.id ??
-              gateway?.gatewayId ??
-              gateway?.gateway_id ??
-              gateway?.n_id ??
-              gateway?.node_id ??
-              "",
-          ).trim();
-        })
-        .filter(Boolean)
-    : [];
-
   return {
     id: String(id),
     firstName,
     lastName,
     email,
-    gateways,
   };
-}
-
-function normalizeGatewayCollection(payload) {
-  const candidates = Array.isArray(payload)
-    ? payload
-    : payload?.gateways ||
-      payload?.nodes ||
-      payload?.items ||
-      payload?.data ||
-      [];
-
-  return candidates.map((entry) => normalizeGateway(entry)).filter(Boolean);
-}
-
-function normalizeGateway(entry) {
-  if (typeof entry === "string" || typeof entry === "number") {
-    const id = String(entry).trim();
-    if (!id) {
-      return null;
-    }
-    return { id, label: `Gateway ${id}` };
-  }
-
-  if (!entry || typeof entry !== "object") {
-    return null;
-  }
-
-  const rawId =
-    entry.id ??
-    entry.gatewayId ??
-    entry.gateway_id ??
-    entry.n_id ??
-    entry.nodeId ??
-    entry.node_id;
-
-  if (rawId == null) {
-    return null;
-  }
-
-  const id = String(rawId);
-  const label =
-    String(
-      entry.label ||
-        entry.name ||
-        entry.gatewayName ||
-        entry.gateway_name ||
-        "",
-    ).trim() || `Gateway ${id}`;
-
-  return { id, label };
-}
-
-function renderGatewayList() {
-  const container = document.getElementById("createGatewayList");
-  if (!container) {
-    return;
-  }
-
-  const gateways =
-    state.gateways.length > 0 ? state.gateways : readLocalGateways();
-  if (gateways.length === 0) {
-    container.innerHTML = '<p class="helper-text">No gateways available.</p>';
-    return;
-  }
-
-  container.innerHTML = gateways
-    .map((gateway, index) => {
-      const checkboxId = `create-gateway-${index}`;
-      return `
-				<label class="gateway-item" for="${checkboxId}">
-					<input type="checkbox" id="${checkboxId}" value="${escapeHtml(gateway.id)}" />
-					<span>${escapeHtml(gateway.label)}</span>
-				</label>
-			`;
-    })
-    .join("");
-}
-
-function getCheckedGatewayIds(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) {
-    return [];
-  }
-
-  return Array.from(
-    container.querySelectorAll('input[type="checkbox"]:checked'),
-  ).map((checkbox) => checkbox.value);
 }
 
 function renderUsersTable() {
@@ -501,16 +335,6 @@ function renderUsersTable() {
 			`;
     })
     .join("");
-}
-
-function upsertUser(user) {
-  const index = state.users.findIndex((entry) => entry.id === user.id);
-  if (index >= 0) {
-    state.users[index] = user;
-    return;
-  }
-
-  state.users.unshift(user);
 }
 
 function formatFullName(user) {
@@ -559,77 +383,9 @@ function writeLocalUsers(users) {
   }
 }
 
-function readLocalGateways() {
-  const fallback = DEFAULT_GATEWAYS;
-  if (!globalThis.localStorage) {
-    return fallback;
-  }
-
-  try {
-    const raw = globalThis.localStorage.getItem(LOCAL_GATEWAYS_KEY);
-    if (!raw) {
-      return fallback;
-    }
-
-    const parsed = safeJsonParse(raw);
-    if (!Array.isArray(parsed)) {
-      return fallback;
-    }
-
-    const normalized = parsed
-      .map((entry) => normalizeGateway(entry))
-      .filter(Boolean);
-
-    return normalized.length > 0 ? normalized : fallback;
-  } catch (error) {
-    reportRecoverableError(error, "read local gateways");
-    return fallback;
-  }
-}
-
-function writeLocalGateways(gateways) {
-  if (!globalThis.localStorage) {
-    return;
-  }
-
-  try {
-    globalThis.localStorage.setItem(
-      LOCAL_GATEWAYS_KEY,
-      JSON.stringify(gateways),
-    );
-  } catch (error) {
-    reportRecoverableError(error, "write local gateways");
-    globalThis.console.warn("Unable to save local gateway data.");
-  }
-}
-
 function getInputValue(inputId) {
   const value = document.getElementById(inputId)?.value || "";
   return value.trim();
-}
-
-function setButtonBusy(button, isBusy) {
-  if (!button || !(button instanceof HTMLButtonElement)) {
-    return;
-  }
-
-  if (isBusy) {
-    button.dataset.originalText = button.textContent || "";
-    button.textContent = "Saving...";
-    button.disabled = true;
-    return;
-  }
-
-  button.textContent =
-    button.dataset.originalText || button.textContent || "Save";
-  button.disabled = false;
-}
-
-function createLocalId() {
-  const random = Math.floor(Math.random() * 1_000_000)
-    .toString()
-    .padStart(6, "0");
-  return `${Date.now()}-${random}`;
 }
 
 function showStatus(message, type) {
