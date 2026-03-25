@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function getAdminApiBase() {
   const apiMeta = document.querySelector('meta[name="farmra-admin-api-base"]');
-  return (apiMeta?.content || "/api/admin").replace(/\/+$/, "");
+  return (apiMeta?.content || "/farmra-api").replace(/\/+$/, "");
 }
 
 async function initializeData() {
@@ -202,20 +202,15 @@ async function requestJson(url, options = {}) {
 
 //calls flask to insert new user
 async function createUserApi({ firstName, lastName, email }) {
-  const res = await fetch("/farmra-api/users", {
+  return requestJson(`${ADMIN_API_BASE}/users`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       first_name: firstName,
       last_name: lastName,
-      email: email,
+      email,
       is_admin: false,
     }),
   });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to create user");
-  return data;
 }
 
 //calls flask to insert new device
@@ -226,9 +221,8 @@ async function createDeviceApi({
   gpsLong,
   gpsLat,
 }) {
-  const res = await fetch("/farmra-api/devices", {
+  return requestJson(`${ADMIN_API_BASE}/devices`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       node_name: nodeName,
       gateway_id: gatewayId,
@@ -237,10 +231,6 @@ async function createDeviceApi({
       gps_lat: gpsLat || null,
     }),
   });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to create device");
-  return data;
 }
 
 function safeJsonParse(value) {
