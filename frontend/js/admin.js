@@ -118,10 +118,15 @@ function bindSideActionButtons() {
 
 function bindAdminForm() {
   const createUserForm = document.getElementById("createUserForm");
+  const createDeviceForm = document.getElementById("createDeviceForm");
   const refreshUsersBtn = document.getElementById("refreshUsersBtn");
 
   if (createUserForm) {
     createUserForm.addEventListener("submit", handleCreateUser);
+  }
+
+  if (createDeviceForm) {
+    createDeviceForm.addEventListener("submit", handleCreateDevice);
   }
 
   if (refreshUsersBtn) {
@@ -223,6 +228,54 @@ async function handleCreateUser(event) {
   }
 }
 
+/*async function handleCreateUser(event) {
+  event.preventDefault();
+
+  const firstName = getInputValue("firstName");
+  const lastName = getInputValue("lastName");
+  const email = getInputValue("googleEmail");
+
+  try {
+    await createUserApi({
+      firstName,
+      lastName,
+      email,
+      isAdmin: false
+    });
+
+    showStatus("User created successfully.", "success");
+    event.target.reset();
+    loadUsers(); // refresh table
+  } catch (err) {
+    showStatus(err.message, "error");
+  }
+}
+*/
+async function handleCreateDevice(event) {
+  event.preventDefault();
+
+  const nodeName = getInputValue("nodeName");
+  const gatewayId = getInputValue("gatewayId");
+  const userEmail = getInputValue("userEmail");
+  const gpsLong = getInputValue("gpsLong");
+  const gpsLat = getInputValue("gpsLat");
+
+  try {
+    await createDeviceApi({
+      nodeName,
+      gatewayId,
+      userEmail,
+      gpsLong,
+      gpsLat,
+    });
+
+    showStatus("Device created successfully.", "success");
+    event.target.reset();
+  } catch (err) {
+    showStatus(err.message, "error");
+  }
+}
+
 async function loadUsers() {
   try {
     const payload = await requestJson(`${ADMIN_API_BASE}/users`);
@@ -294,6 +347,49 @@ async function requestJson(url, options = {}) {
   }
 
   return parsed;
+}
+
+//calls flask to insert new user
+async function createUserApi({ firstName, lastName, email, isAdmin }) {
+  const res = await fetch("/farmra-api/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      is_admin: isAdmin,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to create user");
+  return data;
+}
+
+//calls flask to insert new device
+async function createDeviceApi({
+  nodeName,
+  gatewayId,
+  userEmail,
+  gpsLong,
+  gpsLat,
+}) {
+  const res = await fetch("/farmra-api/devices", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      node_name: nodeName,
+      gateway_id: gatewayId,
+      user_email: userEmail, // <-- IMPORTANT
+      gps_long: gpsLong || null,
+      gps_lat: gpsLat || null,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to create device");
+  return data;
 }
 
 function safeJsonParse(value) {

@@ -174,7 +174,7 @@ def list_users():
     conn = db_access()
     cur = conn.cursor()
     cur.execute("""
-        SELECT u_userId, u_fName, u_lName, u_email, u_isAdmin
+        SELECT u_userId, u_fName, u_lName, u_email
         FROM testing_grounds.users
         ORDER BY u_userId
     """)
@@ -187,7 +187,6 @@ def list_users():
             "first_name": r[1],
             "last_name": r[2],
             "email": r[3],
-            "is_admin": r[4]
         }
         for r in rows
     ])
@@ -259,17 +258,19 @@ def create_device():
     data = request.get_json() or {}
 
     gateway_id = data.get("gateway_id")
-    user_id = data.get("user_id")
+    user_email = data.get("user_email")
     node_name = data.get("node_name")
     gps_long = data.get("gps_long")
     gps_lat = data.get("gps_lat")
 
-    if not (gateway_id and user_id and node_name):
+    if not (gateway_id and user_email and node_name):
         return jsonify({"error": "Missing required fields"}), 400
 
-    if not get_user_by_id(user_id):
+    user_row = get_user_by_email(user_email)
+    if not user_row:
         return jsonify({"error": "Assigned user does not exist"}), 400
-
+    user_id = user_row[0]
+    
     conn = db_access()
     cur = conn.cursor()
 
