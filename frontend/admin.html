@@ -77,6 +77,9 @@
 				<button class="side-btn active" data-target="create-user" type="button">
 					Create User
 				</button>
+				<button class="side-btn" data-target="create-node" type="button">
+					Create Node
+				</button>
 				<button class="side-btn" data-target="user-list" type="button">
 					View Users
 				</button>
@@ -128,9 +131,9 @@
 		<main>
 			<section class="admin-shell" aria-label="Admin content">
 				<header class="admin-header">
-					<h2>User Setup and Gateway Access</h2>
+					<h2>User and Node Setup</h2>
 					<p>
-						Create users with their Google email and review all existing users.
+						Create users and nodes, then review all existing users.
 					</p>
 				</header>
 
@@ -156,13 +159,29 @@
 								required
 							/>
 
-							<fieldset class="gateway-fieldset">
-								<legend>Initial Gateway Access</legend>
-								<p class="helper-text">Choose one or more gateways.</p>
-								<div id="createGatewayList" class="gateway-list"></div>
-							</fieldset>
-
 							<button type="submit" class="btn-login admin-submit">Create User</button>
+						</form>
+					</section>
+
+					<section id="create-node" class="admin-card" aria-labelledby="create-node-title">
+						<h3 id="create-node-title">Create Node</h3>
+						<form id="createDeviceForm" class="admin-form" novalidate>
+							<label for="nodeName">Node Name</label>
+							<input id="nodeName" name="nodeName" type="text" required />
+
+							<label for="gatewayId">Gateway ID</label>
+							<input id="gatewayId" name="gatewayId" type="text" required />
+
+							<label for="gpsLong">GPS Longitude</label>
+							<input id="gpsLong" name="gpsLong" type="text" placeholder="-86.7816" />
+
+							<label for="gpsLat">GPS Latitude</label>
+							<input id="gpsLat" name="gpsLat" type="text" placeholder="36.1627" />
+
+							<label for="userEmail">User Email</label>
+							<input id="userEmail" name="userEmail" type="email" autocomplete="email" required />
+
+							<button type="submit" class="btn-login admin-submit">Create Node</button>
 						</form>
 					</section>
 				</div>

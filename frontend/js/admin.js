@@ -49,22 +49,15 @@ function getAdminApiBase() {
 }
 
 async function initializeData() {
-  const gatewaysLoaded = await loadGateways();
   const usersLoaded = await loadUsers();
 
-  renderGatewayList();
   renderUsersTable();
 
-  if (!gatewaysLoaded && !usersLoaded) {
+  if (!usersLoaded) {
     showStatus(
       "Admin API is not reachable. Local mode is active for setup and testing.",
       "warning",
     );
-    return;
-  }
-
-  if (!gatewaysLoaded) {
-    showStatus("Gateway list loaded from local defaults.", "warning");
   }
 }
 
@@ -122,7 +115,29 @@ function bindAdminForm() {
   const refreshUsersBtn = document.getElementById("refreshUsersBtn");
 
   if (createUserForm) {
-    createUserForm.addEventListener("submit", handleCreateUser);
+    createUserForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const form = event.currentTarget;
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      const firstName = getInputValue("firstName");
+      const lastName = getInputValue("lastName");
+      const email = getInputValue("googleEmail");
+
+      try {
+        await createUserApi({ firstName, lastName, email });
+
+        showStatus("User created successfully.", "success");
+        form.reset();
+        await loadUsers();
+        renderUsersTable();
+      } catch (error) {
+        showStatus(error instanceof Error ? error.message : String(error), "error");
+      }
+    });
   }
 
   if (createDeviceForm) {
@@ -131,12 +146,10 @@ function bindAdminForm() {
 
   if (refreshUsersBtn) {
     refreshUsersBtn.addEventListener("click", async () => {
-      const gatewaysLoaded = await loadGateways();
       const usersLoaded = await loadUsers();
-      renderGatewayList();
       renderUsersTable();
 
-      if (gatewaysLoaded && usersLoaded) {
+      if (usersLoaded) {
         showStatus("Admin data refreshed from API.", "success");
         return;
       }
@@ -149,108 +162,6 @@ function bindAdminForm() {
   }
 }
 
-async function handleCreateUser(event) {
-  event.preventDefault();
-
-  const form = event.currentTarget;
-  if (!(form instanceof HTMLFormElement)) {
-    return;
-  }
-
-  if (!form.reportValidity()) {
-    return;
-  }
-
-  const firstName = getInputValue("firstName");
-  const lastName = getInputValue("lastName");
-  const email = getInputValue("googleEmail");
-  const gatewayIds = getCheckedGatewayIds("createGatewayList");
-
-  if (gatewayIds.length === 0) {
-    showStatus("Select at least one gateway for initial access.", "error");
-    return;
-  }
-
-  const payload = {
-    firstName,
-    lastName,
-    email,
-    googleEmail: email,
-    gateways: gatewayIds,
-    gatewayIds,
-  };
-
-  const submitBtn = form.querySelector('button[type="submit"]');
-  setButtonBusy(submitBtn, true);
-
-  try {
-    const remoteResult = await createUserRemote(payload);
-    state.remoteUsersLoaded = true;
-
-    const normalized = normalizeUser(remoteResult) || {
-      id: createLocalId(),
-      firstName,
-      lastName,
-      email,
-      gateways: gatewayIds,
-    };
-
-    upsertUser(normalized);
-    writeLocalUsers(state.users);
-    form.reset();
-    renderGatewayList();
-    renderUsersTable();
-    showStatus("User created successfully.", "success");
-    return;
-  } catch (error) {
-    reportRecoverableError(error, "create-user request");
-    state.remoteUsersLoaded = false;
-
-    const localUser = {
-      id: createLocalId(),
-      firstName,
-      lastName,
-      email,
-      gateways: gatewayIds,
-    };
-
-    upsertUser(localUser);
-    writeLocalUsers(state.users);
-    form.reset();
-    renderGatewayList();
-    renderUsersTable();
-    showStatus(
-      "Could not reach the admin API. User was saved locally for now.",
-      "warning",
-    );
-  } finally {
-    setButtonBusy(submitBtn, false);
-  }
-}
-
-/*async function handleCreateUser(event) {
-  event.preventDefault();
-
-  const firstName = getInputValue("firstName");
-  const lastName = getInputValue("lastName");
-  const email = getInputValue("googleEmail");
-
-  try {
-    await createUserApi({
-      firstName,
-      lastName,
-      email,
-      isAdmin: false
-    });
-
-    showStatus("User created successfully.", "success");
-    event.target.reset();
-    loadUsers(); // refresh table
-  } catch (err) {
-    showStatus(err.message, "error");
-  }
-}
-*/
 async function handleCreateDevice(event) {
   event.preventDefault();
 
@@ -312,13 +223,6 @@ async function loadGateways() {
   }
 }
 
-async function createUserRemote(payload) {
-  return requestJson(`${ADMIN_API_BASE}/users`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
 async function requestJson(url, options = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -350,7 +254,7 @@ async function requestJson(url, options = {}) {
 }
 
 //calls flask to insert new user
-async function createUserApi({ firstName, lastName, email, isAdmin }) {
+async function createUserApi({ firstName, lastName, email }) {
   const res = await fetch("/farmra-api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -358,7 +262,7 @@ async function createUserApi({ firstName, lastName, email, isAdmin }) {
       first_name: firstName,
       last_name: lastName,
       email: email,
-      is_admin: isAdmin,
+      is_admin: false,
     }),
   });
 
@@ -427,8 +331,12 @@ function normalizeUser(entry) {
   }
 
   const nameFromSingleField = String(entry.u_name || entry.name || "").trim();
-  let firstName = String(entry.firstName || entry.first_name || "").trim();
-  let lastName = String(entry.lastName || entry.last_name || "").trim();
+  let firstName = String(
+    entry.firstName || entry.first_name || entry.u_fName || "",
+  ).trim();
+  let lastName = String(
+    entry.lastName || entry.last_name || entry.u_lName || "",
+  ).trim();
 
   if (!firstName && nameFromSingleField) {
     const parts = nameFromSingleField.split(/\s+/);
