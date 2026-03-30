@@ -20,7 +20,7 @@ BEGIN
         u_email VARCHAR(64) UNIQUE NOT NULL,
         u_isAdmin BOOLEAN NOT NULL,
         
-        CONSTRAINT users_pk PRIMARY KEY(u_usersId)
+        CONSTRAINT users_pk PRIMARY KEY(u_userId)
     );
 
     --SCHEMA: node_data
@@ -58,7 +58,7 @@ END $TCS$;
 
 --Create hypertable and index
 SELECT create_hypertable('measurements', 'm_time');
-CREATE INDEX ON node_data.measurements (n_id_fk, m_time DESC);
+CREATE INDEX ON node_data.measurements (m_nodeID, m_time DESC);
 
 --Add users and privileges
 GRANT CONNECT ON DATABASE farmra TO user_lambda;

@@ -19,7 +19,6 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = int(os.getenv("DB_PORT"))
 
-# Database Connection
 def db_access():
     return psycopg2.connect(
         dbname=DB_NAME,
@@ -28,7 +27,7 @@ def db_access():
         host=DB_HOST,
         port=DB_PORT
     )
-#Loads encryption key for users email
+
 def load_fernet_key():
     client = boto3.client("secretsmanager", region_name="us-east-1")
     response = client.get_secret_value(SecretId="myapp/fernet")
@@ -40,20 +39,17 @@ cipher = Fernet(FERNET_KEY)
 
 def encrypt_email():
     user_email = request.headers.get("X-User-Email")
-
     if not user_email:
         return "Missing email header", 400
-
     encrypted_email = cipher.encrypt(user_email.encode("utf-8"))
     print("Encrypted email:", encrypted_email)
-
     return "OK", 200
+
 # User Helpers
 def get_user_role(email):
-    """Return boolean u_isAdmin or None."""
     conn = db_access()
     cur = conn.cursor()
-    cur.execute("SELECT u_isAdmin FROM testing_grounds.users WHERE u_email = %s", (email,))
+    cur.execute("SELECT u_isAdmin FROM user_data.users WHERE u_email = %s", (email,))
     row = cur.fetchone()
     conn.close()
     return row[0] if row else None
@@ -63,7 +59,7 @@ def get_user_by_id(user_id):
     cur = conn.cursor()
     cur.execute("""
         SELECT u_userId, u_fName, u_lName, u_email, u_isAdmin
-        FROM testing_grounds.users
+        FROM user_data.users
         WHERE u_userId = %s
     """, (user_id,))
     row = cur.fetchone()
@@ -75,7 +71,7 @@ def get_user_by_email(email):
     cur = conn.cursor()
     cur.execute("""
         SELECT u_userId, u_fName, u_lName, u_email, u_isAdmin
-        FROM testing_grounds.users
+        FROM user_data.users
         WHERE u_email = %s
     """, (email,))
     row = cur.fetchone()
@@ -86,7 +82,7 @@ def insert_user(first_name, last_name, email, is_admin=False):
     conn = db_access()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO testing_grounds.users (u_fName, u_lName, u_email, u_isAdmin)
+        INSERT INTO user_data.users (u_fName, u_lName, u_email, u_isAdmin)
         VALUES (%s, %s, %s, %s)
         RETURNING u_userId
     """, (first_name, last_name, email, is_admin))
@@ -201,7 +197,7 @@ def list_users():
     cur = conn.cursor()
     cur.execute("""
         SELECT u_userId, u_fName, u_lName, u_email
-        FROM testing_grounds.users
+        FROM user_data.users
         ORDER BY u_userId
     """)
     rows = cur.fetchall()
@@ -243,7 +239,7 @@ def update_user(user_id):
     conn = db_access()
     cur = conn.cursor()
     cur.execute("""
-        UPDATE testing_grounds.users
+        UPDATE user_data.users
         SET u_fName = %s,
             u_lName = %s,
             u_email = %s,
@@ -269,7 +265,7 @@ def delete_user(user_id):
 
     conn = db_access()
     cur = conn.cursor()
-    cur.execute("DELETE FROM testing_grounds.users WHERE u_userId = %s", (user_id,))
+    cur.execute("DELETE FROM user_data.users WHERE u_userId = %s", (user_id,))
     conn.commit()
     conn.close()
 
@@ -309,7 +305,7 @@ def create_device():
     if not user_row:
         return jsonify({"error": "Assigned user does not exist"}), 400
     user_id = user_row[0]
-    
+
     conn = None
     cur = None
 
@@ -318,14 +314,14 @@ def create_device():
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT 1 FROM testing_grounds.devices
+            SELECT 1 FROM node_data.devices
             WHERE d_gatewayId = %s AND d_nodeName = %s
         """, (gateway_id, node_name))
         if cur.fetchone():
             return jsonify({"error": "Device name already exists for this gateway"}), 400
 
         cur.execute("""
-            INSERT INTO testing_grounds.devices (d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat)
+            INSERT INTO node_data.devices (d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat)
             VALUES (%s, %s, %s, %s, %s)
             RETURNING d_nodeId
         """, (gateway_id, user_id, node_name, gps_long, gps_lat))
@@ -351,7 +347,7 @@ def list_devices():
     cur = conn.cursor()
     cur.execute("""
         SELECT d_nodeId, d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat
-        FROM testing_grounds.devices
+        FROM node_data.devices
         ORDER BY d_nodeId
     """)
     rows = cur.fetchall()
@@ -376,7 +372,7 @@ def get_device(node_id):
     cur = conn.cursor()
     cur.execute("""
         SELECT d_nodeId, d_gatewayId, d_userId, d_nodeName, d_gpsLong, d_gpsLat
-        FROM testing_grounds.devices
+        FROM node_data.devices
         WHERE d_nodeId = %s
     """, (node_id,))
     row = cur.fetchone()
@@ -402,7 +398,7 @@ def update_device(node_id):
     conn = db_access()
     cur = conn.cursor()
 
-    cur.execute("SELECT 1 FROM testing_grounds.devices WHERE d_nodeId = %s", (node_id,))
+    cur.execute("SELECT 1 FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
     if not cur.fetchone():
         conn.close()
         return jsonify({"error": "Device not found"}), 404
@@ -412,7 +408,7 @@ def update_device(node_id):
         return jsonify({"error": "Assigned user does not exist"}), 400
 
     cur.execute("""
-        UPDATE testing_grounds.devices
+        UPDATE node_data.devices
         SET d_gatewayId = %s,
             d_userId = %s,
             d_nodeName = %s,
@@ -439,12 +435,12 @@ def delete_device(node_id):
     conn = db_access()
     cur = conn.cursor()
 
-    cur.execute("SELECT 1 FROM testing_grounds.devices WHERE d_nodeId = %s", (node_id,))
+    cur.execute("SELECT 1 FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
     if not cur.fetchone():
         conn.close()
         return jsonify({"error": "Device not found"}), 404
 
-    cur.execute("DELETE FROM testing_grounds.devices WHERE d_nodeId = %s", (node_id,))
+    cur.execute("DELETE FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
     conn.commit()
     conn.close()
 
@@ -461,7 +457,7 @@ def get_user_nodes():
 
     cur.execute("""
         SELECT u_userId
-        FROM testing_grounds.users
+        FROM user_data.users
         WHERE u_email = %s
     """, (session.get("email"),))
     user_row = cur.fetchone()
@@ -474,7 +470,7 @@ def get_user_nodes():
 
     cur.execute("""
         SELECT d_nodeId, d_nodeName
-        FROM testing_grounds.devices
+        FROM node_data.devices
         WHERE d_userId = %s
         ORDER BY d_nodeId
     """, (user_id,))
@@ -498,14 +494,14 @@ def get_node_measurements(node_id):
     conn = db_access()
     cur = conn.cursor()
 
-    cur.execute("SELECT 1 FROM testing_grounds.devices WHERE d_nodeId = %s", (node_id,))
+    cur.execute("SELECT 1 FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
     if not cur.fetchone():
         conn.close()
         return jsonify({"error": "Node not found"}), 404
 
     cur.execute("""
         SELECT m_time, m_temperature, m_moist, m_light, m_batt
-        FROM testing_grounds.live_measurements
+        FROM node_data.measurements
         WHERE m_nodeId = %s
         ORDER BY m_time DESC
         LIMIT %s
@@ -525,11 +521,9 @@ def get_node_measurements(node_id):
         for r in rows
     ])
 
-# Root
 @app.route("/")
 def root():
     return redirect("/index.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
