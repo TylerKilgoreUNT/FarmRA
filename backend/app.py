@@ -19,6 +19,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = int(os.getenv("DB_PORT"))
 
+# Database Connection
 def db_access():
     return psycopg2.connect(
         dbname=DB_NAME,
@@ -27,7 +28,7 @@ def db_access():
         host=DB_HOST,
         port=DB_PORT
     )
-
+#Loads encryption key for users email
 def load_fernet_key():
     client = boto3.client("secretsmanager", region_name="us-east-1")
     response = client.get_secret_value(SecretId="myapp/fernet")
@@ -39,10 +40,13 @@ cipher = Fernet(FERNET_KEY)
 
 def encrypt_email():
     user_email = request.headers.get("X-User-Email")
+
     if not user_email:
         return "Missing email header", 400
+
     encrypted_email = cipher.encrypt(user_email.encode("utf-8"))
     print("Encrypted email:", encrypted_email)
+
     return "OK", 200
 
 # User Helpers
