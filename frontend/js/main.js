@@ -92,7 +92,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    accountNodesList.innerHTML = nodeNames.map((name) => `<li>${name}</li>`).join("");
+    accountNodesList.innerHTML = nodeNames
+      .map((name) => `<li>${name}</li>`)
+      .join("");
   }
 
   function setAccountModalOpen(isOpen) {
@@ -410,53 +412,53 @@ const GRAFANA_LINKS = {
   all: {
     gauges: {
       light:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       moisture:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       temperature:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
     },
     timeseries: {
       light:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       moisture:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       temperature:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
     },
     table:
-      "https://farmra.net:3000/d-solo/advlmcb/all-data?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+      "https://farmra.net:3000/d-solo/advlmcb/all-data?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
   },
   metrics: {
     light: {
       gauge:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       timeseries:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       heatmap:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
       table:
-        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/ad476cq/light-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
     },
     moisture: {
       gauge:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       timeseries:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       heatmap:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
       table:
-        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adjdbpc/new-dashboard?orgId=1&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
     },
     temperature: {
       gauge:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true",
       timeseries:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
       heatmap:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true",
       table:
-        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=now-1h&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
+        "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&refresh=1m&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true",
     },
   },
 };
