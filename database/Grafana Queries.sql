@@ -1,76 +1,54 @@
---Initial Dashboard 11/13/2025
-SELECT
-  m_time AS "Time",
-  m_temperature AS "Temperature (°F)"
-FROM
-  node_data.measurements 
-WHERE
-  n_id_fk = 1001
-ORDER BY
-  m_time DESC;
+--Grafana Queries
+  --Light
+  SELECT
+    m_time AS "Time",
+    m_light AS "Light Level (lx)"
+  FROM
+    node_data.measurements
+  WHERE
+    m_nodeID = $ndoe
+    AND $__timeFilter(m_time)
+  ORDER BY
+    m_time ASC;
 
---New values 3/12/2026
-SELECT
-  m_time AS "Time",
-  m_moist AS "Moisture (0-4)"
-FROM
-  testing_grounds.test_measurements
-WHERE
-  m_nodeId = 1
-ORDER BY
-  m_time DESC;
+  --Moisture
+  SELECT
+    m_time AS "Time",
+    m_moist AS "Moisture (0-4)"
+  FROM
+    node_data.measurements
+  WHERE
+    m_nodeID = $node
+    AND $__timeFilter(m_time)
+  ORDER BY
+    m_time ASC;
 
---Query variable for node
-SELECT d.d_nodeId AS __value, d.d_nodeName AS __text
-FROM testing_grounds.devices d
-WHERE d.d_userId = (
-    SELECT u.u_userId
-    FROM testing_grounds.users u
-    WHERE u.u_email = '$email'
-)
-ORDER BY d.d_nodeId;
+  --Temperature
+  SELECT
+    m_time AS "Time",
+    m_temperature AS "Temperature (°F)"
+  FROM
+    node_data.measurements
+  WHERE
+    m_nodeID = $node
+    AND $__timeFilter(m_time)
+  ORDER BY
+    m_time ASC;
 
-SELECT
-  m.m_time AS "Time",
-  m.m_moist AS "Moisture"
-FROM testing_grounds.test_measurements m
-WHERE m.m_nodeId IN ($node)
-ORDER BY m.m_time DESC;
+  --For tables, order by DESC instead of ASC.
 
-
-SELECT
-  m.m_time AS "Time",
-  m.m_moist AS "Moisture"
-FROM testing_grounds.test_measurements m
-WHERE m.m_nodeId IN ($node)
-AND m.m_nodeId IN (
-    SELECT d.d_nodeId
-    FROM testing_grounds.devices d
-    WHERE d.d_userId = (
-        SELECT u.u_userId
-        FROM testing_grounds.users u
-        WHERE u.u_email = '$email'
+  --Averages
+  SELECT
+    $__timeGroup(m_time, 5m) AS "Time",
+    AVG(m_light) AS "Avg Light"
+  FROM node_data.measurements m
+  WHERE
+    m.m_nodeId IN (
+      SELECT d.d_nodeId
+      FROM node_data.devices d
+      JOIN user_data.users u ON u.u_userId = d.d_userId
+      WHERE u.u_email = '$email'
     )
-)
-ORDER BY m.m_time DESC;
-
---Testing variable passing:
-<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
-<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&var-node=1$__all&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
-
-<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1775053903118&to=1775057503118&timezone=browser&var-email=farmrauser@gmail.com&var-node=1&refresh=1m&editIndex=1&panelId=panel-1&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
-
-<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1774885646243&to=1775058446243&timezone=browser&var-email=farmrauser@gmail.com&var-node=1&refresh=1m&var-query0=&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
-<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1774885646243&to=1775058446243&timezone=browser&var-email=farmrauser@gmail.com&var-node=2&refresh=1m&var-query0=&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
-
-/*async function injectGrafanaVariables() {
-  const res = await fetch("/farmra-api/me");
-  const me = await res.json();
-
-  const email = encodeURIComponent(me.email);
-
-  document.querySelectorAll("iframe[data-grafana]").forEach((frame) => {
-    const base = frame.dataset.src; // original URL stored in data-src
-    frame.src = `${base}?var-email=${email}`;
-  });
-  }*/
+    AND $__timeFilter(m_time)
+  GROUP BY 1
+  ORDER BY 1;
