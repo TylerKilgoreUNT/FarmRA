@@ -133,6 +133,51 @@
       </output>
       <div class="grafana-flex"></div>
     </main>
+
+    <dialog
+      id="accountInfoModal"
+      class="account-modal"
+      aria-labelledby="accountInfoTitle"
+      hidden
+    >
+      <header class="account-modal-header">
+        <h2 id="accountInfoTitle">Account Info</h2>
+        <button
+          id="accountInfoCloseBtn"
+          class="account-modal-close"
+          type="button"
+          aria-label="Close account info"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="account-modal-body">
+        <section class="account-card" aria-label="User details">
+          <h3>User</h3>
+          <div class="account-row">
+            <span class="account-label">First Name</span>
+            <span id="accountFirstName" class="account-value">Loading...</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Last Name</span>
+            <span id="accountLastName" class="account-value">Loading...</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Email</span>
+            <span id="accountEmail" class="account-value">Loading...</span>
+          </div>
+        </section>
+
+        <section class="account-card" aria-label="Assigned nodes">
+          <h3>Assigned Nodes</h3>
+          <ul id="accountNodesList" class="account-node-list">
+            <li>Loading...</li>
+          </ul>
+        </section>
+      </div>
+    </dialog>
+
     <div id="overlay" class="overlay" hidden></div>
     <script src="js/main.js" defer></script>
   </body>

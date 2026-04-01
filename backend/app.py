@@ -95,6 +95,17 @@ def insert_user(first_name, last_name, email, is_admin=False):
     conn.close()
     return new_id
 
+def split_full_name(full_name):
+    safe_name = (full_name or "").strip()
+    if not safe_name:
+        return "", ""
+
+    name_parts = safe_name.split()
+    if len(name_parts) == 1:
+        return name_parts[0], ""
+
+    return name_parts[0], " ".join(name_parts[1:])
+
 # Decorators
 def require_login(f):
     @wraps(f)
@@ -145,9 +156,33 @@ def load_user():
 @app.route("/me", methods=["GET"])
 @require_login
 def me():
+    email = session.get("email")
+    display_name = session.get("name") or ""
+    first_name, last_name = split_full_name(display_name)
+
+    if email:
+        conn = db_access()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT u_fName, u_lName
+            FROM user_data.users
+            WHERE u_email = %s
+            """,
+            (email,),
+        )
+        row = cur.fetchone()
+        conn.close()
+
+        if row:
+            first_name = row[0] or first_name
+            last_name = row[1] or last_name
+
     return jsonify({
-        "email": session.get("email"),
-        "name": session.get("name"),
+        "email": email,
+        "name": display_name,
+        "first_name": first_name,
+        "last_name": last_name,
         "is_admin": session.get("is_admin")
     })
 

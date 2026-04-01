@@ -14,7 +14,133 @@ const NODE_GRAFANA_LINK_CACHE = new Map();
 let activeNode = "node1";
 let nodesData = [];
 
+function splitUserName(fullName) {
+  const trimmed = String(fullName || "").trim();
+  if (!trimmed) {
+    return { firstName: "Unavailable", lastName: "Unavailable" };
+  }
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "Unavailable" };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+async function fetchJsonOrThrow(url, errorPrefix) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`${errorPrefix}: ${res.status}`);
+  }
+  return res.json();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  const overlay = document.getElementById("overlay");
+  const accountInfoModal = document.getElementById("accountInfoModal");
+  const accountInfoCloseBtn = document.getElementById("accountInfoCloseBtn");
+  const accountFirstName = document.getElementById("accountFirstName");
+  const accountLastName = document.getElementById("accountLastName");
+  const accountEmail = document.getElementById("accountEmail");
+  const accountNodesList = document.getElementById("accountNodesList");
+
+  function renderAccountInfoLoading() {
+    if (accountFirstName) accountFirstName.textContent = "Loading...";
+    if (accountLastName) accountLastName.textContent = "Loading...";
+    if (accountEmail) accountEmail.textContent = "Loading...";
+    if (accountNodesList) {
+      accountNodesList.innerHTML = "<li>Loading...</li>";
+    }
+  }
+
+  function renderAccountInfoFallback() {
+    if (accountFirstName) accountFirstName.textContent = "Unavailable";
+    if (accountLastName) accountLastName.textContent = "Unavailable";
+    if (accountEmail) accountEmail.textContent = "Unavailable";
+    if (accountNodesList) {
+      accountNodesList.innerHTML = "<li>Unable to load assigned nodes</li>";
+    }
+  }
+
+  function renderAccountInfoData(meData, nodes) {
+    const parsedName = splitUserName(meData.name);
+    const firstName = String(meData.first_name || parsedName.firstName);
+    const lastName = String(meData.last_name || parsedName.lastName);
+    const safeEmail = String(meData.email || "Unavailable");
+    const nodeNames = Array.isArray(nodes)
+      ? nodes
+          .map((node) => String(node?.node_name || "").trim())
+          .filter(Boolean)
+      : [];
+
+    if (accountFirstName) accountFirstName.textContent = firstName;
+    if (accountLastName) accountLastName.textContent = lastName;
+    if (accountEmail) accountEmail.textContent = safeEmail;
+
+    if (!accountNodesList) {
+      return;
+    }
+
+    if (nodeNames.length === 0) {
+      accountNodesList.innerHTML = "<li>No nodes assigned</li>";
+      return;
+    }
+
+    accountNodesList.innerHTML = nodeNames.map((name) => `<li>${name}</li>`).join("");
+  }
+
+  function setAccountModalOpen(isOpen) {
+    if (!accountInfoModal) {
+      return;
+    }
+
+    if (typeof accountInfoModal.showModal === "function") {
+      if (overlay) {
+        overlay.hidden = true;
+      }
+
+      if (isOpen && !accountInfoModal.open) {
+        accountInfoModal.showModal();
+      }
+      if (!isOpen && accountInfoModal.open) {
+        accountInfoModal.close();
+      }
+      accountInfoModal.hidden = !isOpen;
+    } else {
+      if (overlay) {
+        overlay.hidden = !isOpen;
+      }
+      accountInfoModal.hidden = !isOpen;
+    }
+
+    document.body.classList.toggle("modal-open", isOpen);
+  }
+
+  async function openAccountInfoModal() {
+    renderAccountInfoLoading();
+    setAccountModalOpen(true);
+
+    try {
+      const [meData, nodes] = await Promise.all([
+        fetchJsonOrThrow("/farmra-api/me", "Failed to fetch account details"),
+        fetchJsonOrThrow("/farmra-api/nodes", "Failed to fetch node details"),
+      ]);
+
+      renderAccountInfoData(meData, nodes);
+    } catch (error) {
+      console.error("Failed to load account info:", error);
+      renderAccountInfoFallback();
+    }
+  }
+
+  function closeAccountInfoModal() {
+    setAccountModalOpen(false);
+  }
+
   function setNodeButtonsLabel(label) {
     document
       .querySelectorAll("#left-panel .side-btn[data-node]")
@@ -35,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
         emailSpan.textContent = data.email;
       }
 
-      window.currentUserEmail = data.email;
+      globalThis.currentUserEmail = data.email;
 
       //Users Name - Display greeting
       const greetingSpan = document.getElementById("userGreeting");
@@ -79,18 +205,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  /*async function injectGrafanaVariables() {
-  const res = await fetch("/farmra-api/me");
-  const me = await res.json();
-
-  const email = encodeURIComponent(me.email);
-
-  document.querySelectorAll("iframe[data-grafana]").forEach((frame) => {
-    const base = frame.dataset.src; // original URL stored in data-src
-    frame.src = `${base}?var-email=${email}`;
-  });
-  }*/
-
   function updateNodeButtonLabels() {
     const nodeButtons = Array.from(
       document.querySelectorAll("#left-panel .side-btn[data-node]"),
@@ -109,6 +223,20 @@ document.addEventListener("DOMContentLoaded", function () {
   // User menu functionality
   const userMenuBtn = document.getElementById("userMenuBtn");
   const userDropdown = document.getElementById("userDropdown");
+
+  if (accountInfoCloseBtn) {
+    accountInfoCloseBtn.addEventListener("click", closeAccountInfoModal);
+  }
+
+  if (overlay) {
+    overlay.addEventListener("click", closeAccountInfoModal);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && accountInfoModal && !accountInfoModal.hidden) {
+      closeAccountInfoModal();
+    }
+  });
 
   if (userMenuBtn && userDropdown) {
     // Toggle menu on button click
@@ -134,8 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switch (action) {
           case "account info":
             e.preventDefault();
-            console.log("Show account info");
-            // Account info view is not implemented on this page.
+            openAccountInfoModal();
             break;
           case "change password":
             e.preventDefault();
@@ -413,11 +540,11 @@ function applyNodeContextToUrl(url, nodeKey) {
   nextUrl = setOrAppendQueryParam(nextUrl, "var-nodeid", nodeNumber);
 
   //Added by Brenden :)
-  if (window.currentUserEmail) {
+  if (globalThis.currentUserEmail) {
     nextUrl = setOrAppendQueryParam(
       nextUrl,
       "var-email",
-      window.currentUserEmail,
+      globalThis.currentUserEmail,
     );
   }
 
