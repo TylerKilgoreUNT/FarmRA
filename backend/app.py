@@ -491,28 +491,19 @@ def delete_device(node_id):
 @app.route("/nodes", methods=["GET"])
 @require_login
 def get_user_nodes():
+    email = (session.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"error": "Not authenticated"}), 401
+
     conn = db_access()
     cur = conn.cursor()
-
     cur.execute("""
-        SELECT u_userId
-        FROM user_data.users
-        WHERE u_email = %s
-    """, (session.get("email"),))
-    user_row = cur.fetchone()
-
-    if not user_row:
-        conn.close()
-        return jsonify({"error": "User not found"}), 404
-
-    user_id = user_row[0]
-
-    cur.execute("""
-        SELECT d_nodeId, d_nodeName
-        FROM node_data.devices
-        WHERE d_userId = %s
-        ORDER BY d_nodeId
-    """, (user_id,))
+        SELECT d.d_nodeId, d.d_nodeName
+        FROM node_data.devices d
+        INNER JOIN user_data.users u ON u.u_userId = d.d_userId
+        WHERE LOWER(TRIM(u.u_email)) = %s
+        ORDER BY d.d_nodeId
+    """, (email,))
 
     rows = cur.fetchall()
     conn.close()
