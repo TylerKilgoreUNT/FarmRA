@@ -15,6 +15,14 @@ let activeNode = "node1";
 let nodesData = [];
 
 document.addEventListener("DOMContentLoaded", function () {
+  function setNodeButtonsLabel(label) {
+    document
+      .querySelectorAll("#left-panel .side-btn[data-node]")
+      .forEach((btn) => {
+        btn.textContent = label;
+      });
+  }
+
   //Added for displaying email
   async function loadUserInfo() {
     try {
@@ -40,6 +48,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function loadNodes() {
+    // Keep placeholders visible while data is being requested.
+    setNodeButtonsLabel("Loading nodes...");
+
     try {
       const res = await fetch("/farmra-api/nodes");
       if (!res.ok) {
@@ -49,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!Array.isArray(nodesData) || nodesData.length === 0) {
         console.warn("No nodes loaded from API");
+        setNodeButtonsLabel("No nodes assigned");
         return;
       }
 
@@ -63,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
       updateNodeButtonLabels();
     } catch (err) {
       console.error("Failed to load nodes:", err);
+      setNodeButtonsLabel("Unable to load nodes");
     }
   }
 
