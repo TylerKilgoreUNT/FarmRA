@@ -1,5 +1,7 @@
 const GRAFANA_LOADER_TIMEOUT_MS = 20000;
 let grafanaLoaderTimeoutId = null;
+const INLINE_GRAFANA_LOADER_TIMEOUT_MS = 20000;
+let inlineGrafanaLoaderTimeoutId = null;
 const NODE_STORAGE_KEY = "farmra_selected_node";
 const NODE_KEYS = new Set(["node1", "node2"]);
 const NODE_NUMBERS = {
@@ -689,20 +691,13 @@ function hideGrafanaLoader() {
   loader.setAttribute("aria-busy", "false");
 }
 
-function trackGrafanaIframeLoading(container) {
-  if (!container) {
-    hideGrafanaLoader();
-    return;
-  }
-
-  const iframes = Array.from(container.querySelectorAll("iframe"));
-
+function trackGrafanaIframeListLoading(iframes, message) {
   if (grafanaLoaderTimeoutId) {
     globalThis.clearTimeout(grafanaLoaderTimeoutId);
     grafanaLoaderTimeoutId = null;
   }
 
-  if (iframes.length === 0) {
+  if (!Array.isArray(iframes) || iframes.length === 0) {
     hideGrafanaLoader();
     return;
   }
@@ -712,7 +707,8 @@ function trackGrafanaIframeLoading(container) {
   let settled = false;
 
   showGrafanaLoader(
-    `Loading ${total} dashboard${total === 1 ? "" : "s"} for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
+    message ||
+      `Loading ${total} dashboard${total === 1 ? "" : "s"} for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
   );
 
   const handleLoaded = () => {
@@ -738,6 +734,139 @@ function trackGrafanaIframeLoading(container) {
     settled = true;
     hideGrafanaLoader();
   }, GRAFANA_LOADER_TIMEOUT_MS);
+}
+
+function trackGrafanaIframeLoading(container) {
+  if (!container) {
+    hideGrafanaLoader();
+    return;
+  }
+
+  const iframes = Array.from(container.querySelectorAll("iframe"));
+
+  trackGrafanaIframeListLoading(iframes);
+}
+
+function showInlineTimeseriesLoader(container, message) {
+  if (!container) {
+    return;
+  }
+
+  const loader = container.querySelector(".grafana-inline-loader");
+  if (!loader) {
+    return;
+  }
+
+  const loaderText = loader.querySelector(".grafana-inline-loader-text");
+  loader.classList.remove("is-hidden");
+  loader.setAttribute("aria-busy", "true");
+
+  if (loaderText) {
+    loaderText.textContent = message;
+  }
+}
+
+function hideInlineTimeseriesLoader(container) {
+  if (!container) {
+    return;
+  }
+
+  const loader = container.querySelector(".grafana-inline-loader");
+  if (!loader) {
+    return;
+  }
+
+  loader.classList.add("is-hidden");
+  loader.setAttribute("aria-busy", "false");
+}
+
+function trackInlineTimeseriesLoading({ iframe, container, message }) {
+  if (!iframe || !container) {
+    return;
+  }
+
+  if (inlineGrafanaLoaderTimeoutId) {
+    globalThis.clearTimeout(inlineGrafanaLoaderTimeoutId);
+    inlineGrafanaLoaderTimeoutId = null;
+  }
+
+  showInlineTimeseriesLoader(container, message);
+
+  let settled = false;
+
+  const handleLoaded = () => {
+    if (settled) {
+      return;
+    }
+
+    settled = true;
+    if (inlineGrafanaLoaderTimeoutId) {
+      globalThis.clearTimeout(inlineGrafanaLoaderTimeoutId);
+      inlineGrafanaLoaderTimeoutId = null;
+    }
+    hideInlineTimeseriesLoader(container);
+  };
+
+  iframe.addEventListener("load", handleLoaded, { once: true });
+
+  inlineGrafanaLoaderTimeoutId = globalThis.setTimeout(() => {
+    if (settled) {
+      return;
+    }
+
+    settled = true;
+    hideInlineTimeseriesLoader(container);
+  }, INLINE_GRAFANA_LOADER_TIMEOUT_MS);
+}
+
+function updateAllTabTimeseriesSection({
+  container,
+  sensor,
+  nodeLinks,
+  baseSrc,
+  detectedAllUrls,
+}) {
+  if (!container) {
+    return;
+  }
+
+  const normalizedSensor = normalizeSensor(sensor);
+  const timeseriesIndex = 3 + SENSOR_TYPES.indexOf(normalizedSensor);
+  const timeseriesSrc = getAllPanelSrc({
+    panelType: "timeseries",
+    sensor: normalizedSensor,
+    baseSrc,
+    detectedAllUrls,
+    detectedIndex: timeseriesIndex,
+    nodeLinks,
+  });
+
+  const timeseriesContainer = container.querySelector(
+    ".grafana-all-timeseries .grafanaContainer-full",
+  );
+  const timeseriesFrame = timeseriesContainer?.querySelector("iframe");
+
+  if (!timeseriesFrame) {
+    return;
+  }
+
+  container.querySelectorAll(".all-timeseries-toggle").forEach((toggleBtn) => {
+    toggleBtn.classList.toggle(
+      "active",
+      normalizeSensor(toggleBtn.dataset.sensor) === normalizedSensor,
+    );
+  });
+
+  const sensorLabel =
+    normalizedSensor.charAt(0).toUpperCase() + normalizedSensor.slice(1);
+  trackInlineTimeseriesLoading({
+    iframe: timeseriesFrame,
+    container: timeseriesContainer,
+    message: `Loading ${sensorLabel} time series for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
+  });
+
+  timeseriesFrame.title = `${normalizedSensor} Time Series`;
+  timeseriesFrame.src = timeseriesSrc;
 }
 
 /*
@@ -816,7 +945,13 @@ function renderSensor(sensor) {
         <div class="grafana-all-row grafana-all-timeseries">
           <div class="grafana-all-timeseries-content">
             <div class="grafana-all-timeseries-controls">${timeseriesToggles}</div>
-            <div class="grafanaContainer grafanaContainer-full">
+            <div class="grafanaContainer grafanaContainer-full grafana-timeseries-container">
+              <output class="grafana-inline-loader is-hidden" aria-live="polite" aria-atomic="true" aria-busy="false">
+                <div class="grafana-main-loader-inner grafana-inline-loader-inner">
+                  <img src="./assets/FarmRA_Loading.gif" alt="Time series loading" class="grafana-main-loader-logo grafana-inline-loader-logo" />
+                  <p class="grafana-main-loader-text grafana-inline-loader-text">Loading time series...</p>
+                </div>
+              </output>
               <iframe src="${timeseriesSrc}" width="100%" height="400px" frameborder="0" title="${timeseriesSensor} Time Series"></iframe>
             </div>
           </div>
@@ -835,8 +970,19 @@ function renderSensor(sensor) {
       .querySelectorAll(".all-timeseries-toggle")
       .forEach((toggleBtn) => {
         toggleBtn.addEventListener("click", () => {
-          allTabTimeseriesSensor = normalizeSensor(toggleBtn.dataset.sensor);
-          renderSensor("all");
+          const nextSensor = normalizeSensor(toggleBtn.dataset.sensor);
+          if (nextSensor === allTabTimeseriesSensor) {
+            return;
+          }
+
+          allTabTimeseriesSensor = nextSensor;
+          updateAllTabTimeseriesSection({
+            container,
+            sensor: nextSensor,
+            nodeLinks,
+            baseSrc,
+            detectedAllUrls,
+          });
         });
       });
   } else {

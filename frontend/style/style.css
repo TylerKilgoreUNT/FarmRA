@@ -603,6 +603,47 @@ main{
 	border-radius: 8px;
 }
 
+.grafana-timeseries-container {
+	position: relative;
+}
+
+.grafana-inline-loader {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(10, 10, 10, 0.72);
+	backdrop-filter: blur(2px);
+	border-radius: 8px;
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.grafana-inline-loader.is-hidden {
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.grafana-inline-loader-inner {
+	min-width: 180px;
+	padding: 0.9rem 1.1rem;
+	gap: 0.55rem;
+}
+
+.grafana-inline-loader-logo {
+	width: 62px;
+	height: 62px;
+	border-radius: 10px;
+}
+
+.grafana-inline-loader-text {
+	font-size: 0.85rem;
+}
+
 .grafana-all-layout {
 	display: flex;
 	flex-direction: column;
