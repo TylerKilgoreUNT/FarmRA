@@ -56,6 +56,12 @@ ORDER BY m.m_time DESC;
 
 --Testing variable passing:
 <iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
+<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&var-email=farmrauser@gmail.com&var-node=1$__all&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
+
+<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1775053903118&to=1775057503118&timezone=browser&var-email=farmrauser@gmail.com&var-node=1&refresh=1m&editIndex=1&panelId=panel-1&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
+
+<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1774885646243&to=1775058446243&timezone=browser&var-email=farmrauser@gmail.com&var-node=1&refresh=1m&var-query0=&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
+<iframe src="https://farmra.net:3000/d-solo/adgpg9p/variable-test?orgId=1&from=1774885646243&to=1775058446243&timezone=browser&var-email=farmrauser@gmail.com&var-node=2&refresh=1m&var-query0=&editIndex=1&panelId=panel-2&__feature.dashboardSceneSolo=true" width="450" height="200" frameborder="0"></iframe>
 
 /*async function injectGrafanaVariables() {
   const res = await fetch("/farmra-api/me");

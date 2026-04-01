@@ -21,16 +21,13 @@ document.addEventListener("DOMContentLoaded", function () {
       const res = await fetch("/farmra-api/me");
       const data = await res.json();
 
-      window.currentUserEmail = data.email;
-
-      //const tableWithEmail = setOrAppendQueryParam(tableSrc, "var-email", window.currentUserEmail);
-      //<iframe src="${tableWithEmail}" width="100%" height="400px" frameborder="0" title="All Sensors Table"></iframe>
-
       //Users Email
       const emailSpan = document.getElementById("userEmail");
       if (emailSpan && data.email) {
         emailSpan.textContent = data.email;
       }
+
+      window.currentUserEmail = data.email;
 
       //Users Name - Display greeting
       const greetingSpan = document.getElementById("userGreeting");
@@ -95,7 +92,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadUserInfo();
   loadNodes();
-  //End user email
 
   // User menu functionality
   const userMenuBtn = document.getElementById("userMenuBtn");
@@ -286,7 +282,7 @@ const GRAFANA_LINKS = {
       temperature:
         "https://farmra.net:3000/d-solo/adrltsq/temperature-graphs?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
     },
-    table: 
+    table:
       "https://farmra.net:3000/d-solo/advlmcb/all-data?orgId=1&from=1773273600000&to=1773359100000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true",
   },
   metrics: {
@@ -402,6 +398,15 @@ function applyNodeContextToUrl(url, nodeKey) {
   nextUrl = setOrAppendQueryParam(nextUrl, "var-node", nodeNumber);
   nextUrl = setOrAppendQueryParam(nextUrl, "var-node_id", nodeNumber);
   nextUrl = setOrAppendQueryParam(nextUrl, "var-nodeid", nodeNumber);
+
+  //Added by Brenden :)
+  if (window.currentUserEmail) {
+    nextUrl = setOrAppendQueryParam(
+      nextUrl,
+      "var-email",
+      window.currentUserEmail,
+    );
+  }
 
   return nextUrl;
 }
