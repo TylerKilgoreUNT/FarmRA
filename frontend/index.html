@@ -21,10 +21,10 @@
     <nav id="top-bar" class="top-bar" aria-label="Top navigation">
       <div class="farmra-logo">
         <img src="./assets/FarmRA.png" alt="Farm Ra Logo" />
+        <span id="userGreeting" class="user-greeting"></span>
       </div>
       <div class="top-bar-left">
         <h1>FarmRA</h1>
-        <span id="userGreeting" class="user-greeting"></span>
       </div>
       <div class="top-bar-right">
         <div class="user-menu">
@@ -131,43 +131,53 @@
           </p>
         </div>
       </output>
-      <div class="grafana-flex">
-        <div class="grafana-half-row">
-          <div class="grafanaContainer grafanaContainer-half">
-            <iframe
-              src="https://farmra.net:3000/d-solo/adrltsq/12-22-2025-node-1?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-3&__feature.dashboardSceneSolo=true"
-              width="100%"
-              height="400px"
-              title="Grafana Panel 2"
-            ></iframe>
-          </div>
-          <div class="grafanaContainer grafanaContainer-half">
-            <iframe
-              src="https://farmra.net:3000/d-solo/adrltsq/12-22-2025-node-1?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-1&__feature.dashboardSceneSolo=true"
-              width="100%"
-              height="400px"
-              title="Grafana Panel 3"
-            ></iframe>
-          </div>
-          <div class="grafanaContainer grafanaContainer-half">
-            <iframe
-              src="https://farmra.net:3000/d-solo/adrltsq/12-22-2025-node-1?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-2&__feature.dashboardSceneSolo=true"
-              width="100%"
-              height="400px"
-              title="Grafana Panel 2"
-            ></iframe>
-          </div>
-          <div class="grafanaContainer grafanaContainer-half">
-            <iframe
-              src="https://farmra.net:3000/d-solo/adrltsq/12-22-2025-node-1?orgId=1&from=1762300800000&to=1762385400000&timezone=browser&panelId=panel-4&__feature.dashboardSceneSolo=true"
-              width="100%"
-              height="400px"
-              title="Grafana Panel 2"
-            ></iframe>
-          </div>
-        </div>
-      </div>
+      <div class="grafana-flex"></div>
     </main>
+
+    <dialog
+      id="accountInfoModal"
+      class="account-modal"
+      aria-labelledby="accountInfoTitle"
+      hidden
+    >
+      <header class="account-modal-header">
+        <h2 id="accountInfoTitle">Account Info</h2>
+        <button
+          id="accountInfoCloseBtn"
+          class="account-modal-close"
+          type="button"
+          aria-label="Close account info"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="account-modal-body">
+        <section class="account-card" aria-label="User details">
+          <h3>User</h3>
+          <div class="account-row">
+            <span class="account-label">First Name</span>
+            <span id="accountFirstName" class="account-value">Loading...</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Last Name</span>
+            <span id="accountLastName" class="account-value">Loading...</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Email</span>
+            <span id="accountEmail" class="account-value">Loading...</span>
+          </div>
+        </section>
+
+        <section class="account-card" aria-label="Assigned nodes">
+          <h3>Assigned Nodes</h3>
+          <ul id="accountNodesList" class="account-node-list">
+            <li>Loading...</li>
+          </ul>
+        </section>
+      </div>
+    </dialog>
+
     <div id="overlay" class="overlay" hidden></div>
     <script src="js/main.js" defer></script>
   </body>

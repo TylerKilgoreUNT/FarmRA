@@ -1,5 +1,7 @@
 const GRAFANA_LOADER_TIMEOUT_MS = 20000;
 let grafanaLoaderTimeoutId = null;
+const INLINE_GRAFANA_LOADER_TIMEOUT_MS = 20000;
+let inlineGrafanaLoaderTimeoutId = null;
 const NODE_STORAGE_KEY = "farmra_selected_node";
 const NODE_KEYS = new Set(["node1", "node2"]);
 const NODE_NUMBERS = {
@@ -14,7 +16,141 @@ const NODE_GRAFANA_LINK_CACHE = new Map();
 let activeNode = "node1";
 let nodesData = [];
 
+function splitUserName(fullName) {
+  const trimmed = String(fullName || "").trim();
+  if (!trimmed) {
+    return { firstName: "Unavailable", lastName: "Unavailable" };
+  }
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "Unavailable" };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+async function fetchJsonOrThrow(url, errorPrefix) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`${errorPrefix}: ${res.status}`);
+  }
+  return res.json();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  const overlay = document.getElementById("overlay");
+  const accountInfoModal = document.getElementById("accountInfoModal");
+  const accountInfoCloseBtn = document.getElementById("accountInfoCloseBtn");
+  const accountFirstName = document.getElementById("accountFirstName");
+  const accountLastName = document.getElementById("accountLastName");
+  const accountEmail = document.getElementById("accountEmail");
+  const accountNodesList = document.getElementById("accountNodesList");
+
+  function renderAccountInfoLoading() {
+    if (accountFirstName) accountFirstName.textContent = "Loading...";
+    if (accountLastName) accountLastName.textContent = "Loading...";
+    if (accountEmail) accountEmail.textContent = "Loading...";
+    if (accountNodesList) {
+      accountNodesList.innerHTML = "<li>Loading...</li>";
+    }
+  }
+
+  function renderAccountInfoFallback() {
+    if (accountFirstName) accountFirstName.textContent = "Unavailable";
+    if (accountLastName) accountLastName.textContent = "Unavailable";
+    if (accountEmail) accountEmail.textContent = "Unavailable";
+    if (accountNodesList) {
+      accountNodesList.innerHTML = "<li>Unable to load assigned nodes</li>";
+    }
+  }
+
+  function renderAccountInfoData(meData, nodes) {
+    const parsedName = splitUserName(meData.name);
+    const firstName = String(meData.first_name || parsedName.firstName);
+    const lastName = String(meData.last_name || parsedName.lastName);
+    const safeEmail = String(meData.email || "Unavailable");
+    const nodeNames = Array.isArray(nodes)
+      ? nodes
+          .map((node) => String(node?.node_name || "").trim())
+          .filter(Boolean)
+      : [];
+
+    if (accountFirstName) accountFirstName.textContent = firstName;
+    if (accountLastName) accountLastName.textContent = lastName;
+    if (accountEmail) accountEmail.textContent = safeEmail;
+
+    if (!accountNodesList) {
+      return;
+    }
+
+    if (nodeNames.length === 0) {
+      accountNodesList.innerHTML = "<li>No nodes assigned</li>";
+      return;
+    }
+
+    accountNodesList.innerHTML = nodeNames.map((name) => `<li>${name}</li>`).join("");
+  }
+
+  function setAccountModalOpen(isOpen) {
+    if (!accountInfoModal) {
+      return;
+    }
+
+    if (typeof accountInfoModal.showModal === "function") {
+      if (overlay) {
+        overlay.hidden = true;
+      }
+
+      if (isOpen && !accountInfoModal.open) {
+        accountInfoModal.showModal();
+      }
+      if (!isOpen && accountInfoModal.open) {
+        accountInfoModal.close();
+      }
+      accountInfoModal.hidden = !isOpen;
+    } else {
+      if (overlay) {
+        overlay.hidden = !isOpen;
+      }
+      accountInfoModal.hidden = !isOpen;
+    }
+
+    document.body.classList.toggle("modal-open", isOpen);
+  }
+
+  async function openAccountInfoModal() {
+    renderAccountInfoLoading();
+    setAccountModalOpen(true);
+
+    try {
+      const [meData, nodes] = await Promise.all([
+        fetchJsonOrThrow("/farmra-api/me", "Failed to fetch account details"),
+        fetchJsonOrThrow("/farmra-api/nodes", "Failed to fetch node details"),
+      ]);
+
+      renderAccountInfoData(meData, nodes);
+    } catch (error) {
+      console.error("Failed to load account info:", error);
+      renderAccountInfoFallback();
+    }
+  }
+
+  function closeAccountInfoModal() {
+    setAccountModalOpen(false);
+  }
+
+  function setNodeButtonsLabel(label) {
+    document
+      .querySelectorAll("#left-panel .side-btn[data-node]")
+      .forEach((btn) => {
+        btn.textContent = label;
+      });
+  }
+
   //Added for displaying email
   async function loadUserInfo() {
     try {
@@ -27,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
         emailSpan.textContent = data.email;
       }
 
-      window.currentUserEmail = data.email;
+      globalThis.currentUserEmail = data.email;
 
       //Users Name - Display greeting
       const greetingSpan = document.getElementById("userGreeting");
@@ -40,6 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function loadNodes() {
+    // Keep placeholders visible while data is being requested.
+    setNodeButtonsLabel("Loading nodes...");
+
     try {
       const res = await fetch("/farmra-api/nodes");
       if (!res.ok) {
@@ -49,6 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!Array.isArray(nodesData) || nodesData.length === 0) {
         console.warn("No nodes loaded from API");
+        setNodeButtonsLabel("No nodes assigned");
         return;
       }
 
@@ -63,20 +203,9 @@ document.addEventListener("DOMContentLoaded", function () {
       updateNodeButtonLabels();
     } catch (err) {
       console.error("Failed to load nodes:", err);
+      setNodeButtonsLabel("Unable to load nodes");
     }
   }
-
-  /*async function injectGrafanaVariables() {
-  const res = await fetch("/farmra-api/me");
-  const me = await res.json();
-
-  const email = encodeURIComponent(me.email);
-
-  document.querySelectorAll("iframe[data-grafana]").forEach((frame) => {
-    const base = frame.dataset.src; // original URL stored in data-src
-    frame.src = `${base}?var-email=${email}`;
-  });
-  }*/
 
   function updateNodeButtonLabels() {
     const nodeButtons = Array.from(
@@ -96,6 +225,20 @@ document.addEventListener("DOMContentLoaded", function () {
   // User menu functionality
   const userMenuBtn = document.getElementById("userMenuBtn");
   const userDropdown = document.getElementById("userDropdown");
+
+  if (accountInfoCloseBtn) {
+    accountInfoCloseBtn.addEventListener("click", closeAccountInfoModal);
+  }
+
+  if (overlay) {
+    overlay.addEventListener("click", closeAccountInfoModal);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && accountInfoModal && !accountInfoModal.hidden) {
+      closeAccountInfoModal();
+    }
+  });
 
   if (userMenuBtn && userDropdown) {
     // Toggle menu on button click
@@ -121,8 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switch (action) {
           case "account info":
             e.preventDefault();
-            console.log("Show account info");
-            // Account info view is not implemented on this page.
+            openAccountInfoModal();
             break;
           case "change password":
             e.preventDefault();
@@ -400,11 +542,11 @@ function applyNodeContextToUrl(url, nodeKey) {
   nextUrl = setOrAppendQueryParam(nextUrl, "var-nodeid", nodeNumber);
 
   //Added by Brenden :)
-  if (window.currentUserEmail) {
+  if (globalThis.currentUserEmail) {
     nextUrl = setOrAppendQueryParam(
       nextUrl,
       "var-email",
-      window.currentUserEmail,
+      globalThis.currentUserEmail,
     );
   }
 
@@ -549,20 +691,13 @@ function hideGrafanaLoader() {
   loader.setAttribute("aria-busy", "false");
 }
 
-function trackGrafanaIframeLoading(container) {
-  if (!container) {
-    hideGrafanaLoader();
-    return;
-  }
-
-  const iframes = Array.from(container.querySelectorAll("iframe"));
-
+function trackGrafanaIframeListLoading(iframes, message) {
   if (grafanaLoaderTimeoutId) {
     globalThis.clearTimeout(grafanaLoaderTimeoutId);
     grafanaLoaderTimeoutId = null;
   }
 
-  if (iframes.length === 0) {
+  if (!Array.isArray(iframes) || iframes.length === 0) {
     hideGrafanaLoader();
     return;
   }
@@ -572,7 +707,8 @@ function trackGrafanaIframeLoading(container) {
   let settled = false;
 
   showGrafanaLoader(
-    `Loading ${total} dashboard${total === 1 ? "" : "s"} for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
+    message ||
+      `Loading ${total} dashboard${total === 1 ? "" : "s"} for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
   );
 
   const handleLoaded = () => {
@@ -598,6 +734,139 @@ function trackGrafanaIframeLoading(container) {
     settled = true;
     hideGrafanaLoader();
   }, GRAFANA_LOADER_TIMEOUT_MS);
+}
+
+function trackGrafanaIframeLoading(container) {
+  if (!container) {
+    hideGrafanaLoader();
+    return;
+  }
+
+  const iframes = Array.from(container.querySelectorAll("iframe"));
+
+  trackGrafanaIframeListLoading(iframes);
+}
+
+function showInlineTimeseriesLoader(container, message) {
+  if (!container) {
+    return;
+  }
+
+  const loader = container.querySelector(".grafana-inline-loader");
+  if (!loader) {
+    return;
+  }
+
+  const loaderText = loader.querySelector(".grafana-inline-loader-text");
+  loader.classList.remove("is-hidden");
+  loader.setAttribute("aria-busy", "true");
+
+  if (loaderText) {
+    loaderText.textContent = message;
+  }
+}
+
+function hideInlineTimeseriesLoader(container) {
+  if (!container) {
+    return;
+  }
+
+  const loader = container.querySelector(".grafana-inline-loader");
+  if (!loader) {
+    return;
+  }
+
+  loader.classList.add("is-hidden");
+  loader.setAttribute("aria-busy", "false");
+}
+
+function trackInlineTimeseriesLoading({ iframe, container, message }) {
+  if (!iframe || !container) {
+    return;
+  }
+
+  if (inlineGrafanaLoaderTimeoutId) {
+    globalThis.clearTimeout(inlineGrafanaLoaderTimeoutId);
+    inlineGrafanaLoaderTimeoutId = null;
+  }
+
+  showInlineTimeseriesLoader(container, message);
+
+  let settled = false;
+
+  const handleLoaded = () => {
+    if (settled) {
+      return;
+    }
+
+    settled = true;
+    if (inlineGrafanaLoaderTimeoutId) {
+      globalThis.clearTimeout(inlineGrafanaLoaderTimeoutId);
+      inlineGrafanaLoaderTimeoutId = null;
+    }
+    hideInlineTimeseriesLoader(container);
+  };
+
+  iframe.addEventListener("load", handleLoaded, { once: true });
+
+  inlineGrafanaLoaderTimeoutId = globalThis.setTimeout(() => {
+    if (settled) {
+      return;
+    }
+
+    settled = true;
+    hideInlineTimeseriesLoader(container);
+  }, INLINE_GRAFANA_LOADER_TIMEOUT_MS);
+}
+
+function updateAllTabTimeseriesSection({
+  container,
+  sensor,
+  nodeLinks,
+  baseSrc,
+  detectedAllUrls,
+}) {
+  if (!container) {
+    return;
+  }
+
+  const normalizedSensor = normalizeSensor(sensor);
+  const timeseriesIndex = 3 + SENSOR_TYPES.indexOf(normalizedSensor);
+  const timeseriesSrc = getAllPanelSrc({
+    panelType: "timeseries",
+    sensor: normalizedSensor,
+    baseSrc,
+    detectedAllUrls,
+    detectedIndex: timeseriesIndex,
+    nodeLinks,
+  });
+
+  const timeseriesContainer = container.querySelector(
+    ".grafana-all-timeseries .grafanaContainer-full",
+  );
+  const timeseriesFrame = timeseriesContainer?.querySelector("iframe");
+
+  if (!timeseriesFrame) {
+    return;
+  }
+
+  container.querySelectorAll(".all-timeseries-toggle").forEach((toggleBtn) => {
+    toggleBtn.classList.toggle(
+      "active",
+      normalizeSensor(toggleBtn.dataset.sensor) === normalizedSensor,
+    );
+  });
+
+  const sensorLabel =
+    normalizedSensor.charAt(0).toUpperCase() + normalizedSensor.slice(1);
+  trackInlineTimeseriesLoading({
+    iframe: timeseriesFrame,
+    container: timeseriesContainer,
+    message: `Loading ${sensorLabel} time series for ${NODE_LABELS[activeNode] || getNodeLabel(activeNode)}...`,
+  });
+
+  timeseriesFrame.title = `${normalizedSensor} Time Series`;
+  timeseriesFrame.src = timeseriesSrc;
 }
 
 /*
@@ -676,7 +945,13 @@ function renderSensor(sensor) {
         <div class="grafana-all-row grafana-all-timeseries">
           <div class="grafana-all-timeseries-content">
             <div class="grafana-all-timeseries-controls">${timeseriesToggles}</div>
-            <div class="grafanaContainer grafanaContainer-full">
+            <div class="grafanaContainer grafanaContainer-full grafana-timeseries-container">
+              <output class="grafana-inline-loader is-hidden" aria-live="polite" aria-atomic="true" aria-busy="false">
+                <div class="grafana-main-loader-inner grafana-inline-loader-inner">
+                  <img src="./assets/FarmRA_Loading.gif" alt="Time series loading" class="grafana-main-loader-logo grafana-inline-loader-logo" />
+                  <p class="grafana-main-loader-text grafana-inline-loader-text">Loading time series...</p>
+                </div>
+              </output>
               <iframe src="${timeseriesSrc}" width="100%" height="400px" frameborder="0" title="${timeseriesSensor} Time Series"></iframe>
             </div>
           </div>
@@ -695,8 +970,19 @@ function renderSensor(sensor) {
       .querySelectorAll(".all-timeseries-toggle")
       .forEach((toggleBtn) => {
         toggleBtn.addEventListener("click", () => {
-          allTabTimeseriesSensor = normalizeSensor(toggleBtn.dataset.sensor);
-          renderSensor("all");
+          const nextSensor = normalizeSensor(toggleBtn.dataset.sensor);
+          if (nextSensor === allTabTimeseriesSensor) {
+            return;
+          }
+
+          allTabTimeseriesSensor = nextSensor;
+          updateAllTabTimeseriesSection({
+            container,
+            sensor: nextSensor,
+            nodeLinks,
+            baseSrc,
+            detectedAllUrls,
+          });
         });
       });
   } else {

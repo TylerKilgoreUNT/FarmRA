@@ -47,5 +47,101 @@
         </div>
       </div>
     </section>
+
+    <dialog
+      id="loginAccessModal"
+      class="login-alert-modal"
+      aria-labelledby="loginAccessModalTitle"
+      hidden
+    >
+      <header class="login-alert-header">
+        <h2 id="loginAccessModalTitle">Account Not Registered</h2>
+        <button
+          id="loginAccessModalClose"
+          class="login-alert-close"
+          type="button"
+          aria-label="Close message"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="login-alert-body">
+        <p>
+          Your Google account is not currently registered for FarmRA access.
+        </p>
+        <p>
+          Please contact
+          <a href="mailto:untfarmra@gmail.com">untfarmra@gmail.com</a>
+          for setup or support.
+        </p>
+      </div>
+
+      <footer class="login-alert-footer">
+        <button id="loginAccessModalAcknowledge" class="oauth-btn-primary" type="button">
+          Got it
+        </button>
+      </footer>
+    </dialog>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("loginAccessModal");
+        const closeBtn = document.getElementById("loginAccessModalClose");
+        const acknowledgeBtn = document.getElementById("loginAccessModalAcknowledge");
+        const params = new URLSearchParams(globalThis.location.search || "");
+        const shouldOpen = params.get("error") === "not_registered";
+
+        if (!modal) {
+          return;
+        }
+
+        const closeModal = () => {
+          if (modal.open) {
+            modal.close();
+          }
+          modal.hidden = true;
+          document.body.classList.remove("modal-open");
+        };
+
+        if (closeBtn) {
+          closeBtn.addEventListener("click", closeModal);
+        }
+
+        if (acknowledgeBtn) {
+          acknowledgeBtn.addEventListener("click", closeModal);
+        }
+
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) {
+            closeModal();
+          }
+        });
+
+        modal.addEventListener("close", () => {
+          document.body.classList.remove("modal-open");
+        });
+
+        if (!shouldOpen) {
+          return;
+        }
+
+        document.body.classList.add("modal-open");
+        modal.hidden = false;
+
+        if (typeof modal.showModal === "function") {
+          modal.showModal();
+        } else {
+          modal.setAttribute("open", "open");
+        }
+
+        params.delete("error");
+        const nextQuery = params.toString();
+        const queryPart = nextQuery ? `?${nextQuery}` : "";
+        const hashPart = globalThis.location.hash || "";
+        const nextUrl = `${globalThis.location.pathname}${queryPart}${hashPart}`;
+        globalThis.history.replaceState(null, "", nextUrl);
+      });
+    </script>
   </body>
 </html>
