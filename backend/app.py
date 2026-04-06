@@ -32,8 +32,18 @@ def db_access():
 def load_fernet_key():
     client = boto3.client("secretsmanager", region_name="us-east-1")
     response = client.get_secret_value(SecretId="myapp/fernet")
-    secret_dict = json.loads(response["SecretString"])
-    return secret_dict["FERNET_KEY"].encode()
+
+    secret = response.get("SecretString")
+    if not secret:
+        raise ValueError("SecretString not found")
+
+    try:
+        data = json.loads(secret)
+        key = data["FERNET_KEY"]
+    except Exception:
+        key = secret  # fallback if it's just a raw string
+
+    return key.encode()
 
 #FERNET_KEY = load_fernet_key()
 #cipher = Fernet(FERNET_KEY)
