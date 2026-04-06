@@ -45,8 +45,8 @@ def load_fernet_key():
 
     return key.encode()
 
-#FERNET_KEY = load_fernet_key()
-#cipher = Fernet(FERNET_KEY)
+FERNET_KEY = load_fernet_key()
+cipher = Fernet(FERNET_KEY)
 
 def encrypt_email():
     user_email = request.headers.get("X-User-Email")
