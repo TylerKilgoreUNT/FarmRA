@@ -169,7 +169,7 @@ def load_user():
     user_email = request.headers.get("X-User-Email")
     user_name = request.headers.get("X-User-Name")
 
-    if not encrypted_user_email:
+    if not user_email:
         return redirect("/login.html")
 
     session["email"] = user_email
