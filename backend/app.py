@@ -70,18 +70,14 @@ def get_cipher():
             print("Error loading cipher:", e)
             return None
     return cipher
-get_cipher()
 
-def encrypt_email():
-    user_email = request.headers.get("X-User-Email")
+def encrypt_email(user_email: str) -> str:
+    cipher = get_cipher()
+    if cipher is None:
+        raise Exception("Cipher unavailable")
 
-    if not user_email:
-        return "Missing email header", 400
-
-    encrypted_email = cipher.encrypt(user_email.encode("utf-8"))
-    print("Encrypted email:", encrypted_email)
-
-    return "OK", 200
+    encrypted = cipher.encrypt(user_email.encode("utf-8"))
+    return encrypted.decode("utf-8")
 
 # User Helpers
 def get_user_role(email):
@@ -171,11 +167,13 @@ def load_user():
         return
 
     user_email = request.headers.get("X-User-Email")
+    encrypted_user_email = encrypt_email(user_email)
     user_name = request.headers.get("X-User-Name")
 
-    if not user_email:
+    if not encrypted_user_email:
         return redirect("/login.html")
 
+    session["encrypted_email"] = encrypted_user_email
     session["email"] = user_email
     session["name"] = user_name
 
@@ -190,7 +188,8 @@ def load_user():
 @app.route("/me", methods=["GET"])
 @require_login
 def me():
-    email = session.get("email")
+    email = session.get("encrypted_email")
+    user_email = session.get("email")
     display_name = session.get("name") or ""
     first_name, last_name = split_full_name(display_name)
 
@@ -244,10 +243,10 @@ def logout():
 @require_admin
 def create_user():
     data = request.get_json() or {}
-
+    
     first = str(data.get("first_name") or data.get("firstName") or "").strip()
     last = str(data.get("last_name") or data.get("lastName") or "").strip()
-    email = str(data.get("email") or "").strip()
+    email = encrypt_email(str(data.get("email") or "").strip())
     is_admin = bool(data.get("is_admin", data.get("isAdmin", False)))
 
     if not (first and last and email):
@@ -359,6 +358,7 @@ def create_device():
 
     gateway_id = str(payload.get("gateway_id") or payload.get("gatewayId") or "").strip()
     user_email = str(payload.get("user_email") or payload.get("userEmail") or "").strip()
+    encrypted_user_email = encrypt_email(user_email)
     node_name = str(payload.get("node_name") or payload.get("nodeName") or "").strip()
     gps_long = payload.get("gps_long", payload.get("gpsLong"))
     gps_lat = payload.get("gps_lat", payload.get("gpsLat"))
@@ -366,15 +366,15 @@ def create_device():
     missing = []
     if not gateway_id:
         missing.append("gateway_id")
-    if not user_email:
-        missing.append("user_email")
+    if not encrypted_user_email:
+        missing.append("encrypted_user_email")
     if not node_name:
         missing.append("node_name")
 
     if missing:
         return jsonify({"error": "Missing required fields", "missing": missing}), 400
 
-    user_row = get_user_by_email(user_email)
+    user_row = get_user_by_email(encrypted_user_email)
     if not user_row:
         return jsonify({"error": "Assigned user does not exist"}), 400
     user_id = user_row[0]
@@ -525,7 +525,7 @@ def delete_device(node_id):
 @app.route("/nodes", methods=["GET"])
 @require_login
 def get_user_nodes():
-    email = (session.get("email") or "").strip().lower()
+    email = (session.get("encrypted_email") or "").strip().lower()
     if not email:
         return jsonify({"error": "Not authenticated"}), 401
 
