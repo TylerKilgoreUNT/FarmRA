@@ -46,13 +46,31 @@ def load_fernet_key():
     return key.encode()
 
 FERNET_KEY = None
+cipher = None
 
 def get_fernet_key():
     global FERNET_KEY
     if FERNET_KEY is None:
-        FERNET_KEY = load_fernet_key()
+        try:
+            FERNET_KEY = load_fernet_key()
+        except Exception as e:
+            print("Error loading key:", e)
+            return None
     return FERNET_KEY
-cipher = Fernet(FERNET_KEY)
+
+def get_cipher():
+    global cipher
+    if cipher is None:
+        key = get_fernet_key()
+        if key is None:
+            return None
+        try:
+            cipher = Fernet(key.encode())
+        except Exception as e:
+            print("Error loading cipher:", e)
+            return None
+    return cipher
+get_cipher()
 
 def encrypt_email():
     user_email = request.headers.get("X-User-Email")
