@@ -45,7 +45,13 @@ def load_fernet_key():
 
     return key.encode()
 
-FERNET_KEY = load_fernet_key()
+FERNET_KEY = None
+
+def get_fernet_key():
+    global FERNET_KEY
+    if FERNET_KEY is None:
+        FERNET_KEY = load_fernet_key()
+    return FERNET_KEY
 cipher = Fernet(FERNET_KEY)
 
 def encrypt_email():
