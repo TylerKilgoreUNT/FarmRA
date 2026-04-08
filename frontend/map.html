@@ -14,12 +14,50 @@
     <nav id="top-bar" class="top-bar" aria-label="Top navigation">
         <div class="farmra-logo">
             <img src="/assets/FarmRA.png" alt="Farm Ra Logo">
+            <span id="userGreeting" class="user-greeting"></span>
         </div>
         <div class="top-bar-left">
             <h1>FarmRA</h1>
         </div>
         <div class="top-bar-right">
-            <button class="icon-btn" title="User Settings" data-action="settings"></button>
+            <div class="user-menu">
+                <button
+                    class="icon-btn"
+                    title="User Settings"
+                    data-action="settings"
+                    id="userMenuBtn"
+                >
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </button>
+                <div class="dropdown-menu" id="userDropdown" hidden>
+                    <div class="menu-header">
+                        <span id="userEmail" class="user-email"></span>
+                    </div>
+                    <div class="menu-items">
+                        <a href="#" class="menu-item">
+                            <span>Account Info</span>
+                        </a>
+                        <hr class="menu-divider" />
+                        <a
+                            href="/oidc/callback?logout=https://farmra.net/login.html"
+                            class="menu-item text-danger"
+                        >
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -74,6 +112,49 @@
             L.marker([33.255, -97.153], {icon: greenIcon}).addTo(map).bindPopup('<b>Node 2</b><br>Sensor Node 2');
          </script>
     </main>
+    <dialog
+        id="accountInfoModal"
+        class="account-modal"
+        aria-labelledby="accountInfoTitle"
+        hidden
+    >
+        <header class="account-modal-header">
+            <h2 id="accountInfoTitle">Account Info</h2>
+            <button
+                id="accountInfoCloseBtn"
+                class="account-modal-close"
+                type="button"
+                aria-label="Close account info"
+            >
+                ×
+            </button>
+        </header>
+
+        <div class="account-modal-body">
+            <section class="account-card" aria-label="User details">
+                <h3>User</h3>
+                <div class="account-row">
+                    <span class="account-label">First Name</span>
+                    <span id="accountFirstName" class="account-value">Loading...</span>
+                </div>
+                <div class="account-row">
+                    <span class="account-label">Last Name</span>
+                    <span id="accountLastName" class="account-value">Loading...</span>
+                </div>
+                <div class="account-row">
+                    <span class="account-label">Email</span>
+                    <span id="accountEmail" class="account-value">Loading...</span>
+                </div>
+            </section>
+
+            <section class="account-card" aria-label="Assigned nodes">
+                <h3>Assigned Nodes</h3>
+                <ul id="accountNodesList" class="account-node-list">
+                    <li>Loading...</li>
+                </ul>
+            </section>
+        </div>
+    </dialog>
     <div id="overlay" class="overlay" hidden></div>
     <script src="js/main.js" defer></script>
 </body>

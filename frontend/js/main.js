@@ -3,6 +3,7 @@ let grafanaLoaderTimeoutId = null;
 const INLINE_GRAFANA_LOADER_TIMEOUT_MS = 20000;
 let inlineGrafanaLoaderTimeoutId = null;
 const NODE_STORAGE_KEY = "farmra_selected_node";
+const DASHBOARD_TAB_QUERY_PARAM = "tab";
 const NODE_KEYS = new Set(["node1", "node2"]);
 const NODE_NUMBERS = {
   node1: "1",
@@ -31,6 +32,30 @@ function splitUserName(fullName) {
     firstName: parts[0],
     lastName: parts.slice(1).join(" "),
   };
+}
+
+function isMapPage() {
+  const path = globalThis.location.pathname || "";
+  return path.endsWith("/map.html") || path.endsWith("map.html");
+}
+
+function getRequestedDashboardAction() {
+  const params = new URLSearchParams(globalThis.location.search || "");
+  const requestedAction = params.get(DASHBOARD_TAB_QUERY_PARAM) || "";
+  return SENSOR_TYPES.includes(requestedAction) || requestedAction === "all"
+    ? requestedAction
+    : "";
+}
+
+function navigateToDashboardAction(action) {
+  const nextAction = SENSOR_TYPES.includes(action) ? action : "all";
+  const nextUrl = new URL("index.html", globalThis.location.href);
+
+  if (nextAction !== "all") {
+    nextUrl.searchParams.set(DASHBOARD_TAB_QUERY_PARAM, nextAction);
+  }
+
+  globalThis.location.href = nextUrl.toString();
 }
 
 async function fetchJsonOrThrow(url, errorPrefix) {
@@ -366,11 +391,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // Bind only to the left-narrow buttons (buttons are used for sensor toggles)
   document.querySelectorAll("#left-narrow button.icon-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
+      const action = btn.dataset.action || "all";
+
+      if (isMapPage()) {
+        navigateToDashboardAction(action);
+        return;
+      }
+
       document
         .querySelectorAll("#left-narrow .icon-btn")
         .forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      const action = btn.dataset.action;
       console.log("icon action:", action);
       // render the selected sensor/dashboard
       renderSensor(action);
@@ -378,9 +409,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Determine which icon should be active on load based on the current page
-  let desiredAction = "all";
-  const path = globalThis.location.pathname || "";
-  if (path.endsWith("/map.html") || path.endsWith("map.html")) {
+  let desiredAction = getRequestedDashboardAction() || "all";
+  if (isMapPage()) {
     desiredAction = "map";
   }
 
@@ -628,6 +658,10 @@ function getGrafanaLinksForNode(nodeKey) {
 function formatPanelLabel(panelType) {
   if (panelType === "timeseries") return "Time Series";
   return panelType.charAt(0).toUpperCase() + panelType.slice(1);
+}
+
+function formatMetricPanelClass(panelType) {
+  return `grafana-metric-panel-${panelType}`;
 }
 
 function normalizeSensor(sensor) {
@@ -1005,15 +1039,16 @@ function renderSensor(sensor) {
         activeNode,
       );
       const panelLabel = formatPanelLabel(panelType);
+      const metricPanelClass = formatMetricPanelClass(panelType);
 
       return `
-        <div class="grafanaContainer grafanaContainer-half">
+        <div class="grafanaContainer grafanaContainer-half grafana-metric-panel ${metricPanelClass}">
           <iframe src="${src}" width="100%" height="400px" frameborder="0" title="${sensor} ${panelLabel}"></iframe>
         </div>
       `;
     }).join("");
 
-    container.innerHTML = `<div class="grafana-half-row">${metricBoxes}</div>`;
+    container.innerHTML = `<div class="grafana-metric-layout">${metricBoxes}</div>`;
 
     trackGrafanaIframeLoading(container);
   }
