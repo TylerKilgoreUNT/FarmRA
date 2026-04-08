@@ -61,7 +61,10 @@ def get_fernet_key():
 def get_cipher():
     global cipher
     if cipher is None:
-        key = get_fernet_key()
+        try:
+            key = get_fernet_key()
+        except Exception as e:
+            print("Error loading Fernet Key")
         if key is None:
             return None
         try:
