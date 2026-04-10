@@ -168,14 +168,16 @@ def load_user():
 
     user_email = request.headers.get("X-User-Email")
     user_name = request.headers.get("X-User-Name")
+    encrypted_email = encrypt_email(user_email)
 
     if not user_email:
         return redirect("/login.html")
 
     session["email"] = user_email
     session["name"] = user_name
+    session["encrypted_email"] = encrypted_email
 
-    is_admin = get_user_role(user_email)
+    is_admin = get_user_role(encrypted_email)
     if is_admin is None:
         session.clear()
         return redirect("/oidc/callback?logout=https://farmra.net/login.html?error=not_registered")
@@ -186,7 +188,7 @@ def load_user():
 @app.route("/me", methods=["GET"])
 @require_login
 def me():
-    email = session.get("encrypted_email")
+    email = session.get("encrypted_email")     
     user_email = session.get("email")
     display_name = session.get("name") or ""
     first_name, last_name = split_full_name(display_name)
@@ -210,7 +212,7 @@ def me():
             last_name = row[1] or last_name
 
     return jsonify({
-        "email": email,
+        "email": user_email,
         "name": display_name,
         "first_name": first_name,
         "last_name": last_name,
@@ -222,8 +224,10 @@ def route_user():
     email = request.headers.get("X-User-Email")
     if not email:
         return redirect("/login.html")
+    
+    encrypted_email = encrypt_email(email)
 
-    is_admin = get_user_role(email)
+    is_admin = get_user_role(encrypted_email)
     if is_admin is None:
         return redirect("/oidc/callback?logout=https://farmra.net/login.html?error=not_registered")
 
