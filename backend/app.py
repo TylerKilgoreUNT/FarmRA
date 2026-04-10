@@ -177,7 +177,7 @@ def load_user():
     session["name"] = user_name
     session["encrypted_email"] = encrypted_email
 
-    is_admin = get_user_role(encrypted_email)
+    is_admin = get_user_role(user_email)
     if is_admin is None:
         session.clear()
         return redirect("/oidc/callback?logout=https://farmra.net/login.html?error=not_registered")
@@ -227,7 +227,7 @@ def route_user():
     
     encrypted_email = encrypt_email(email)
 
-    is_admin = get_user_role(encrypted_email)
+    is_admin = get_user_role(email)
     if is_admin is None:
         return redirect("/oidc/callback?logout=https://farmra.net/login.html?error=not_registered")
 
