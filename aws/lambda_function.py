@@ -59,12 +59,79 @@ def lambda_handler(event, context):
             else:
                 raise ValueError(f"No node found for gateway_id={gateway_id} and node_name='{node_name}'")
 
+            # Find per node thresholds
+            cursor.execute("SELECT d_minTemp, d_maxTemp, d_minMoist, d_maxMoist FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
+            thresholds = cursor.fetchone()
+            if thresholds:
+                min_temp, max_temp, min_moist, max_moist = thresholds
+            else:
+                min_temp = 32
+                max_temp = 100
+                min_moist = 1900
+                max_moist = 2450
+
+            # Find node state
+            cursor.execute("SELECT d_alertState FROM node_data.devices WHERE d_nodeId = %s", (node_id,))
+            state_row = cursor.fetchone()
+            old_state = state_row[0] if state_row and state_row[0] else 'normal'
+
             # Define sql query parameters 
             sql_insert = "INSERT INTO node_data.measurements (m_time, m_nodeID, m_temperature, m_moist, m_light) VALUES (%s, %s, %s, %s, %s)"
             sql_data = (timestampz, node_id, temperature, moisture, light)
 
             # Insert into PostgreSQL
             cursor.execute(sql_insert, sql_data)
+
+            # Lookup user email
+            cursor.execute("SELECT u_email FROM user_data.users u JOIN node_data.devices d ON d.d_userId = u.u_userId WHERE d.d_nodeId = %s ", (node_id,))
+            email_result = cursor.fetchone()
+
+            if email_result:
+                user_email = email_result[0]
+            else:
+                user_email = None
+
+            # Build email/determine if message contains alert
+            in_alert = False
+            message = ""
+
+            if temperature > max_temp:
+                in_alert = True
+                message += (
+                    f"Alert: Temperature for {node_name} is {temperature}°F.\n"
+                    f"This is above the upper threshold of {max_temp}°F.\n\n"
+                )
+            elif temperature < min_temp:
+                in_alert = True
+                message += (
+                    f"Alert: Temperature for {node_name} is {temperature}°F.\n"
+                    f"This is below the lower threshold of {min_temp}°F.\n\n"
+                )
+
+            if moisture > max_moist:
+                in_alert = True
+                message += (
+                    f"Alert: Moisture for {node_name} is too high (soil too dry).\n"
+                    f"Value: {moisture}\n\n"
+                )
+            elif moisture < min_moist:
+                in_alert = True
+                message += (
+                    f"Alert: Moisture for {node_name} is too low (soil too wet).\n"
+                    f"Value: {moisture}\n\n"
+                )
+
+            new_state = 'alert' if in_alert else 'normal'
+
+            # Send email only if updated to alert state
+            if message and user_email:
+                if old_state == 'normal' and new_state == 'alert':
+                    send_email(message, user_email)
+
+            # Update state field if
+            if new_state != old_state:
+                cursor.execute("UPDATE node_data.devices SET d_alertState = %s WHERE d_nodeId = %s", (new_state, node_id))
+
         conn.commit()
 
     except (Exception, psycopg2.Error) as error:
@@ -80,3 +147,32 @@ def lambda_handler(event, context):
             conn.close()
 
     return {"status": "success"}
+
+def send_email(message, user_email):
+    aws_region = 'us-east-1'
+    sender_email = 'alerts@farmra.net'
+
+    ses_client = boto3.client('ses', region_name=aws_region)
+
+    try:
+        response = ses_client.send_email(
+            Destination={
+                'ToAddresses': [user_email],
+            },
+           Message={
+              'Body': {
+                    'Text': {
+                        'Charset': 'UTF-8',
+                        'Data': message,
+                    },
+                },
+                'Subject': {
+                    'Charset': 'UTF-8',
+                    'Data': 'Threshold Alert Triggered',
+                },
+            },
+            Source=sender_email,
+        )
+        print("Email sent successfully! Message ID:", response['MessageId'])
+    except Exception as e:
+        print(f"Error sending email: {e}")

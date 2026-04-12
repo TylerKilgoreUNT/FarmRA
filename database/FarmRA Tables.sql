@@ -35,9 +35,10 @@ BEGIN
         d_gpsLong FLOAT,
         d_gpsLat FLOAT,
         d_maxTemp INTEGER DEFAULT 100,        
-        d_minTemp INTEGER DEFAULT 100,
+        d_minTemp INTEGER DEFAULT 32,
         d_maxMoist INTEGER DEFAULT 2450,
         d_minMoist INTEGER DEFAULT 1900,
+        d_alertState VARCHAR(16) DEFAULT 'normal',
 
         CONSTRAINT devices_pk PRIMARY KEY(d_nodeId),
         CONSTRAINT unique_name_gid UNIQUE (d_gatewayId, d_nodeName),
@@ -68,7 +69,7 @@ GRANT CONNECT ON DATABASE farmra TO user_lambda;
 GRANT USAGE ON SCHEMA node_data TO user_lambda;
 GRANT USAGE ON SCHEMA user_data TO user_lambda;
 GRANT INSERT ON TABLE node_data.measurements TO user_lambda;
-GRANT SELECT ON TABLE node_data.devices TO user_lambda;
+GRANT SELECT, UPDATE ON TABLE node_data.devices TO user_lambda;
 GRANT SELECT ON TABLE user_data.users TO user_lambda;
 
 GRANT CONNECT ON DATABASE farmra TO user_grafana;
