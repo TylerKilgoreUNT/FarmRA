@@ -188,12 +188,12 @@ def load_user():
 @app.route("/me", methods=["GET"])
 @require_login
 def me():
-    email = session.get("encrypted_email")     
+    encrypted_email = session.get("encrypted_email")     
     user_email = session.get("email")
     display_name = session.get("name") or ""
     first_name, last_name = split_full_name(display_name)
 
-    if email:
+    if user_email:
         conn = db_access()
         cur = conn.cursor()
         cur.execute(
@@ -202,7 +202,7 @@ def me():
             FROM user_data.users
             WHERE u_email = %s
             """,
-            (email,),
+            (user_email,),
         )
         row = cur.fetchone()
         conn.close()
@@ -248,7 +248,7 @@ def create_user():
     
     first = str(data.get("first_name") or data.get("firstName") or "").strip()
     last = str(data.get("last_name") or data.get("lastName") or "").strip()
-    email = encrypt_email(str(data.get("email") or "").strip())
+    email = str(data.get("email") or "").strip()
     is_admin = bool(data.get("is_admin", data.get("isAdmin", False)))
 
     if not (first and last and email):
@@ -360,7 +360,7 @@ def create_device():
 
     gateway_id = str(payload.get("gateway_id") or payload.get("gatewayId") or "").strip()
     user_email = str(payload.get("user_email") or payload.get("userEmail") or "").strip()
-    encrypted_user_email = encrypt_email(user_email)
+    #encrypted_user_email = encrypt_email(user_email)
     node_name = str(payload.get("node_name") or payload.get("nodeName") or "").strip()
     gps_long = payload.get("gps_long", payload.get("gpsLong"))
     gps_lat = payload.get("gps_lat", payload.get("gpsLat"))
@@ -368,15 +368,15 @@ def create_device():
     missing = []
     if not gateway_id:
         missing.append("gateway_id")
-    if not encrypted_user_email:
-        missing.append("encrypted_user_email")
+    if not user_email:
+        missing.append("user_email")
     if not node_name:
         missing.append("node_name")
 
     if missing:
         return jsonify({"error": "Missing required fields", "missing": missing}), 400
 
-    user_row = get_user_by_email(encrypted_user_email)
+    user_row = get_user_by_email(user_email)
     if not user_row:
         return jsonify({"error": "Assigned user does not exist"}), 400
     user_id = user_row[0]
@@ -527,7 +527,7 @@ def delete_device(node_id):
 @app.route("/nodes", methods=["GET"])
 @require_login
 def get_user_nodes():
-    email = (session.get("encrypted_email") or "").strip().lower()
+    email = (session.get("email") or "").strip().lower()
     if not email:
         return jsonify({"error": "Not authenticated"}), 401
 
