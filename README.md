@@ -1,5 +1,7 @@
 # FarmRA
 
+FarmRA is a web-based monitoring system for agricultural sensor nodes. It combines a static frontend, a Flask API, PostgreSQL/TimescaleDB storage, Grafana dashboards, and an AWS Lambda ingest path so users can log in, view their assigned devices, and inspect recent sensor readings.
+
 ## Tech Stack
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
@@ -11,8 +13,6 @@
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-
-FarmRA is a web-based monitoring system for agricultural sensor nodes. It combines a static frontend, a Flask API, PostgreSQL/TimescaleDB storage, Grafana dashboards, and an AWS Lambda ingest path so users can log in, view their assigned devices, and inspect recent sensor readings.
 
 ## What This Repository Contains
 
