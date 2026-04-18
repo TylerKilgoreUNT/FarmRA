@@ -82,6 +82,7 @@
       "#left-narrow .icon-btn.all",
       "#left-narrow .icon-btn.light",
       "#left-narrow .icon-btn.moisture",
+      "#left-narrow .icon-btn.temperature",
       "#left-narrow .icon-btn.map",
     ];
 

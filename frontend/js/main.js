@@ -423,8 +423,17 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   if (sel) sel.classList.add("active");
 
-  // Initial render: attempt to render the corresponding sensor view (noop if no grafana-flex)
-  renderSensor(desiredAction === "map" ? "all" : desiredAction);
+  // Defer Grafana iframe loading until after the browser has painted the page shell
+  // and run entrance animations. Falls back to a short timeout on browsers without
+  // requestIdleCallback (e.g. older Safari).
+  const startGrafanaRender = () =>
+    renderSensor(desiredAction === "map" ? "all" : desiredAction);
+
+  if (typeof globalThis.requestIdleCallback === "function") {
+    globalThis.requestIdleCallback(startGrafanaRender, { timeout: 300 });
+  } else {
+    globalThis.setTimeout(startGrafanaRender, 50);
+  }
 });
 
 /*
