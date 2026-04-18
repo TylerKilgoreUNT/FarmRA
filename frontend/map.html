@@ -85,31 +85,113 @@
     </nav>
     <main>
          <div id="map"></div>
-         <script>
-            var map = L.map('map').setView([33.254, -97.152], 17);
-            L.tileLayer('https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=ee8yik4usfu4xt3Burv3', {
+         <script type="module">
+            const NODE_STORAGE_KEY = "farmra_selected_node";
+            const map = L.map("map").setView([33.254, -97.152], 17);
+
+            L.tileLayer("https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=ee8yik4usfu4xt3Burv3", {
                 maxZoom: 19,
                 attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
             }).addTo(map);
-            
+
             // Define custom marker icons (larger size)
-            var blueIcon = L.icon({
-                iconUrl: '/assets/markerBlue.png',
+            const blueIcon = L.icon({
+                iconUrl: "/assets/markerBlue.png",
                 iconSize: [72, 96],
                 iconAnchor: [36, 96],
                 popupAnchor: [0, -96]
             });
-            
-            var greenIcon = L.icon({
-                iconUrl: '/assets/markerGreen.png',
+
+            const greenIcon = L.icon({
+                iconUrl: "/assets/markerGreen.png",
                 iconSize: [72, 96],
                 iconAnchor: [36, 96],
                 popupAnchor: [0, -96]
             });
-            
-            // Add markers with custom icons
-            L.marker([33.254, -97.152], {icon: blueIcon}).addTo(map).bindPopup('<b>Node 1</b><br>Sensor Node 1');
-            L.marker([33.255, -97.153], {icon: greenIcon}).addTo(map).bindPopup('<b>Node 2</b><br>Sensor Node 2');
+
+            const markerConfigs = [
+                { nodeKey: "node1", coords: [33.254, -97.152], icon: blueIcon, fallbackName: "Node 1" },
+                { nodeKey: "node2", coords: [33.255, -97.153], icon: greenIcon, fallbackName: "Node 2" }
+            ];
+            const markerStateByKey = {};
+
+            function escapeHtml(value) {
+                return String(value || "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#39;");
+            }
+
+            function getNodePopupHtml(nodeKey, nodeName) {
+                const safeNodeName = escapeHtml(nodeName);
+                return `
+                    <div class="node-popup">
+                        <strong>${safeNodeName}</strong><br>
+                        <button type="button" class="node-popup-open-all" data-node-key="${nodeKey}">
+                            Open ${safeNodeName} All Page
+                        </button>
+                    </div>
+                `;
+            }
+
+            markerConfigs.forEach((config) => {
+                const marker = L.marker(config.coords, { icon: config.icon })
+                    .addTo(map)
+                    .bindPopup(getNodePopupHtml(config.nodeKey, config.fallbackName));
+
+                markerStateByKey[config.nodeKey] = {
+                    marker,
+                    fallbackName: config.fallbackName
+                };
+            });
+
+            map.on("popupopen", (event) => {
+                const popupEl = event.popup && event.popup.getElement ? event.popup.getElement() : null;
+                const openAllBtn = popupEl ? popupEl.querySelector(".node-popup-open-all") : null;
+
+                if (!openAllBtn) {
+                    return;
+                }
+
+                openAllBtn.addEventListener("click", () => {
+                    const nodeKey = openAllBtn.dataset.nodeKey || "node1";
+
+                    try {
+                        globalThis.localStorage.setItem(NODE_STORAGE_KEY, nodeKey);
+                    } catch (error) {
+                        console.warn("Unable to store selected node from map popup:", error);
+                    }
+
+                    const targetUrl = new URL("index.html", globalThis.location.href);
+                    globalThis.location.href = targetUrl.toString();
+                });
+            });
+
+            try {
+                const response = await fetch("/farmra-api/nodes");
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch nodes for map popups: ${response.status}`);
+                }
+
+                const nodes = await response.json();
+                if (Array.isArray(nodes)) {
+                    nodes.forEach((node, index) => {
+                        const nodeKey = `node${index + 1}`;
+                        const markerState = markerStateByKey[nodeKey];
+
+                        if (!markerState) {
+                            return;
+                        }
+
+                        const nodeName = (node && node.node_name ? String(node.node_name).trim() : "") || markerState.fallbackName;
+                        markerState.marker.setPopupContent(getNodePopupHtml(nodeKey, nodeName));
+                    });
+                }
+            } catch (error) {
+                console.error("Unable to load node names for map popups:", error);
+            }
          </script>
     </main>
     <dialog
