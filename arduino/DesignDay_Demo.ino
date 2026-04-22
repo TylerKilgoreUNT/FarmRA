@@ -23,7 +23,7 @@ void loop() {
 
   // -----------------------------
   // READ SENSORS
-  ------------------------------
+  // ------------------------------
   DS18B20.requestTemperatures();
   tempC = DS18B20.getTempCByIndex(0);
 
@@ -33,7 +33,7 @@ void loop() {
 
   // -----------------------------
   // VALIDATION
-  ------------------------------
+  // ------------------------------
   bool moistureInvalid = (rawMoisture == 0 || rawMoisture == 4095);
   bool tempInvalid     = (rawTempF < -50 || rawTempF > 125);
 
