@@ -42,7 +42,7 @@ void loop() {
 
   // -----------------------------
   // MOISTURE STATE LOGIC
-  ------------------------------
+  //------------------------------
   int moistureState = 0;
 
   if (rawMoisture <= 1900) {
@@ -57,7 +57,7 @@ void loop() {
 
   // -----------------------------
   // SERIAL OUTPUT ONLY
-  ------------------------------
+  // -----------------------------
   Serial.println("----- SENSOR READINGS -----");
 
   Serial.print("Moisture Raw: ");
