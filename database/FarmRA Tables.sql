@@ -36,8 +36,8 @@ BEGIN
         d_gpsLat FLOAT,
         d_maxTemp INTEGER DEFAULT 100,        
         d_minTemp INTEGER DEFAULT 32,
-        d_maxMoist INTEGER DEFAULT 2450,
-        d_minMoist INTEGER DEFAULT 1900,
+        d_maxMoist INTEGER DEFAULT 3000,
+        d_minMoist INTEGER DEFAULT 2350,
         d_alertState VARCHAR(16) DEFAULT 'normal',
 
         CONSTRAINT devices_pk PRIMARY KEY(d_nodeId),
